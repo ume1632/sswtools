@@ -1704,7 +1704,7 @@ class DMMParser:
             if self._start_date and data.replace('/', '') < self._start_date:
                 raise OmitTitleException('release', 'date')
 
-            self._sm['release'] = rm_nlcode(data)
+            self._sm['release'] = rm_nlcode(data).replace(' 10:00～', '')
             _verbose('release: ', self._sm['release'])
 
         elif tag == '収録時間：':
