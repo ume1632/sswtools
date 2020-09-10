@@ -804,7 +804,7 @@ def main(props=_libssw.Summary(), p_args=_argparse.Namespace, dmmparser=None):
         _emsg('E', '--join-* オプションで読み込んだデータが0件でした。')
 
     # URLを開いて読み込む
-    resp, he = _libssw.open_url(summ['url'])
+    resp, he = _libssw.open_url(summ['url'], set_cookie='age_check_done=1')
 
     if resp.status == 404:
         # 404の時、空のエントリを作成(表形式のみ)して返す
