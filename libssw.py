@@ -544,6 +544,27 @@ _REDIRECTS = {'黒木麻衣':  '花野真衣',
               '松嶋葵':    '松嶋葵（2014）',
               '和久井ナナ': 'ふわりゆうき'}
 
+# FANZA独自の伏字 解除リスト
+_NGWORD = {
+    '●す':   '犯す',
+    '犯●れ': '犯され',
+    '輪●':   '輪姦',
+    '凌●':   '凌辱',
+    '陵●':   '陵辱',
+    '奴●':   '奴隷',
+    '痴●':   '痴漢',
+    '泥●':   '泥酔',
+    '催●':   '催眠',
+    '夜●い': '夜這い',
+    '昏●':   '昏睡',
+    '●ませ': '飲ませ',
+    '虐●':   '虐待',
+    '折●':   '折檻',
+    '●っ':   '酔っ',
+    '●気':   '幼気',
+    '●物':   '薬物'
+}
+
 _CACHEDIR = _Path(_gettempdir()) / 'dmm2ssw_cache'
 _RDRDFILE = 'redirects'
 
@@ -1179,6 +1200,14 @@ def _normalize(string: str, sep=''):
     return sep.join(strings), serial
 
 
+def _fix_ngword(string):
+    """FANZAの伏字解除"""
+    if '●' in string:
+        for key in filter(lambda k: k in string, _NGWORD):
+            string = string.replace(key, _NGWORD[key])
+
+    return string
+
 def _check_omitword(title: str):
     """タイトル内の除外キーワードチェック"""
 
@@ -1681,6 +1710,7 @@ class DMMParser:
         _verbose('title dmm: ', tdmm)
 
         title = self._chk_longtitle() or tdmm
+        title = _fix_ngword(title)
 
         title_dmm = tdmm if not _compare_title(title,
                                                *_normalize(tdmm)) else ''
@@ -1788,7 +1818,7 @@ class DMMParser:
                 _verbose('series hid: ', _IGNORE_SERIES[srid])
                 self._sm['series'] = '__HIDE__'
             else:
-                self._sm['series'] = getnext_text(prop, 'a')[0]
+                self._sm['series'] = _fix_ngword(getnext_text(prop, 'a')[0])
 
             # 独自ページ個別対応
             # ・SOD女子社員
