@@ -2315,7 +2315,7 @@ def from_dmm(listparser, priurls, pages_last=0,
             if show_info:
                 inprogress('(一覧: {} ページ)  '.format(pages))
 
-            resp, he = open_url(searchurl)
+            resp, he = open_url(searchurl, set_cookie='age_check_done=1')
             if resp.status != 200 and ignore:
                 return ((False, False),)
 
