@@ -1136,7 +1136,8 @@ class BuildPage:
 
             if self._t_hdr and remainder and not self._row % 10:
                 # 10件ごとの表ヘッダの出力
-                yield self._t_hdr.format(remainder)
+#                yield self._t_hdr.format(remainder)
+                yield self._t_hdr.format('NO')
                 verbose('Header: ', self._no)
 
             # 作品情報の出力
