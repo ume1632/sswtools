@@ -699,8 +699,7 @@ def _format_wikitext_t(summ, astr, dstr, dir_col, diff_page, add_column):
              else '|{0[subtitle]}'.format(summ)
 
     # 出演者
-    wtext += '|[[別ページ>{}]]'.format(summ['list_page']) if diff_page \
-             else '|{0}'.format(astr)
+    wtext += '|{0}'.format(astr)
 
     # 監督
     if dir_col:

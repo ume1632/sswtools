@@ -3052,19 +3052,22 @@ _sub_pid = (_re.compile(r'^(?:[hn]_)?\d*([a-z]+)(\d+).*', _re.I), r'\1-\2')
 
 # 品番変換個別対応
 _sub_pid_indv = (
-    (_re.compile(r'^125ud(\d+).*'), r'ud\1r'),           # LEOのレンタル
-    (_re.compile(r'^h_093r18(\d+)'), r'r18-\1'),         # チェリーズの一部レーベル
-    (_re.compile(r'^h_066fad(\d+).*'), r'fad\1'),        # FAプロのレンタルの一部
-    (_re.compile(r'^h_066rhtr(\d+).*'), r'rhtr\1'),      # FAプロのレンタルの一部
-    (_re.compile(r'^55t28(\d+)'), r't28-\1'),            # TMAの一部
-    (_re.compile(r'^\d{2}id(\d{2})(\d+)'), r'\1id-\2'),  # TMAの一部
+    (_re.compile(r'^125ud(\d+).*'), r'ud\1r'),              # LEOのレンタル
+    (_re.compile(r'^h_093r18(\d+)'), r'r18-\1'),            # チェリーズの一部レーベル
+    (_re.compile(r'^h_066fad(\d+).*'), r'fad\1'),           # FAプロのレンタルの一部
+    (_re.compile(r'^h_066rhtr(\d+).*'), r'rhtr\1'),         # FAプロのレンタルの一部
+    (_re.compile(r'^55t28(\d+)'), r't28-\1'),               # TMAの一部
+    (_re.compile(r'^5528id(\d+)'), r'28id-\1'),             # TMAの一部
+    (_re.compile(r'^\d{2}id(\d{2})(\d+)'), r'\1id-\2'),     # TMAの一部
     (_re.compile(r'^117?((?:tk)?arm[a-z]?)0?(\d{3}).*'), r'\1-\2'),  # アロマ企画の一部
-    (_re.compile(r'^d1(\d+)'), r'd1-\1'),                # ドグマのD1 CLIMAXレーベル
-    (_re.compile(r'^ad1(\d+)'), r'ad1-\1'),              # ドグマのAD1 CLIMAXレーベル
-    (_re.compile(r'^h_308aoz(\d+z?)'), r'aoz-\1'),       # 青空ソフト
+    (_re.compile(r'^d1(\d+)'), r'd1-\1'),                   # ドグマのD1 CLIMAXレーベル
+    (_re.compile(r'^ad1(\d+)'), r'ad1-\1'),                 # ドグマのAD1 CLIMAXレーベル
+    (_re.compile(r'^h_308aoz(\d+z?)'), r'aoz-\1'),          # 青空ソフト
     (_re.compile(r'^(?:h_102)?bnsps(\d+).*'), r'nsps-\1'),  # ながえスタイルのセル版の一部
-    (_re.compile(r'^21psd(\d+)'), r'psd+\1'),             # アウダースの一部
+    (_re.compile(r'^21psd(\d+)'), r'psd+\1'),               # アウダースの一部
     (_re.compile(r'^\d*d1clymax00(\d+)'), r'd1clymax-\1'),  # D1グランプリ
+    (_re.compile(r'^13dsvr0(\d+)'), r'3dsvr-\1'),           # SOD VRレーベル
+    (_re.compile(r'^(?:[hn]_)?\d*([a-z]+)vr00(\d{3})'), r'\1vr-\2'), # VR作品
 )
 
 
