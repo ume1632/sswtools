@@ -661,10 +661,11 @@ def _format_wikitext_a(summ, anum, astr, service):
     if summ['title_dmm']:
         wtext += '//{0[title_dmm]} #検索用\n'.format(summ)
     # タイトルおよびメーカー
-    titleline = '[[{0[label]} {0[title]} {0[size]}>{0[url]}]]'.format(
-        summ
-    ) if summ['size'] else '[[{0[title]}（{1}）>{0[url]}]]'.format(
-        summ, summ['maker'] or summ['label'])
+    if service == 'ama':
+        titleline = '[[{0[label]} {0[title]} {0[size]}>{0[url]}]]'.format(summ) if summ['size'] \
+        else '[[{0[label]} {0[title]}>{0[url]}]]'.format(summ)
+    else:
+        titleline = '[[{0[title]}（{1}）>{0[url]}]]'.format(summ, summ['maker'] or summ['label'])
     # シリーズ
     if summ['list_type']:
         titleline += '　[[({0[list_type]}一覧)>{0[list_page]}]]'.format(summ)
