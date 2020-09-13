@@ -682,7 +682,7 @@ def _format_wikitext_a(summ, anum, astr):
     return wtext
 
 
-def _format_wikitext_t(summ, astr, dstr, dir_col, diff_page, add_column):
+def _format_wikitext_t(summ, astr, dstr, dir_col, add_column):
     """ウィキテキストの作成 table形式"""
     wtext = ''
 
@@ -949,15 +949,6 @@ def main(props=_libssw.Summary(), p_args=_argparse.Namespace, dmmparser=None):
     if _VERBOSE:
         _check_missings(summ)
 
-    # レーベル一覧での [[別ページ>]] への置き換えチェック
-    # Wikiの制限で80バイトを超える場合は置き換えない
-    diff_page = (series_guide and
-                 retrieval in ('label', 'maker') and
-                 _libssw.le80bytes(summ['series']) and
-                 summ['series'] and
-                 summ['series'] != '__HIDE__')
-    _verbose('diff_page: ', diff_page)
-
     # ウィキテキストの作成
     wikitext_a = _format_wikitext_a(
         summ, pnum, pfmrsstr) if args.table != 1 else ()
@@ -965,7 +956,6 @@ def main(props=_libssw.Summary(), p_args=_argparse.Namespace, dmmparser=None):
                                     pfmrsstr,
                                     dirstr,
                                     args.dir_col,
-                                    diff_page,
                                     add_column) if args.table else ''
 
     if __name__ != '__main__':
