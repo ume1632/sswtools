@@ -703,7 +703,7 @@ def _format_wikitext_t(summ, astr, dstr, dir_col, add_column):
              else '|{0[subtitle]}'.format(summ)
 
     # 出演者
-    wtext += '|{0}'.format(astr)
+    wtext += '|{0}'.format(astr) if astr else '|[[ ]]'
 
     # 監督
     if dir_col:
