@@ -825,7 +825,6 @@ def main(props=_libssw.Summary(), p_args=_argparse.Namespace, dmmparser=None):
                                      '',
                                      '／'.join(summ['director']),
                                      args.dir_col,
-                                     False,
                                      _build_addcols(args.add_column, summ))
         _verbose('wktxt_t: ', wktxt_t)
         return False, resp.status, _ReturnVal(summ['release'],
