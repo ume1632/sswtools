@@ -650,7 +650,7 @@ def _check_missings(summ):
         _emsg('W', '取得できない情報がありました: ', ",".join(missings))
 
 
-def _format_wikitext_a(summ, anum, astr):
+def _format_wikitext_a(summ, anum, astr, service):
     """ウィキテキストの作成 女優ページ用"""
     wtext = ''
 
@@ -661,8 +661,8 @@ def _format_wikitext_a(summ, anum, astr):
     if summ['title_dmm']:
         wtext += '//{0[title_dmm]} #検索用\n'.format(summ)
     # タイトルおよびメーカー
-    titleline = '[[{0[title]} {0[size]}（{1}）>{0[url]}]]'.format(
-        summ, summ['maker'] or summ['label']
+    titleline = '[[{0[label]} {0[title]} {0[size]}>{0[url]}]]'.format(
+        summ
     ) if summ['size'] else '[[{0[title]}（{1}）>{0[url]}]]'.format(
         summ, summ['maker'] or summ['label'])
     # シリーズ
@@ -670,7 +670,10 @@ def _format_wikitext_a(summ, anum, astr):
         titleline += '　[[({0[list_type]}一覧)>{0[list_page]}]]'.format(summ)
     wtext += titleline + '\n'
     # 画像
-    wtext += '[[{0[image_sm]}>{0[image_lg]}]]\n'.format(summ)
+    if service == 'ama':
+        wtext += '[[&ref({0[image_lg]},147)>{0[image_lg]}]]'.format(summ)
+    else:
+        wtext += '[[{0[image_sm]}>{0[image_lg]}]]'.format(summ)
     # 出演者
     if anum not in {0, 1}:
         wtext += '出演者：{0}\n'.format(astr)
@@ -951,7 +954,7 @@ def main(props=_libssw.Summary(), p_args=_argparse.Namespace, dmmparser=None):
 
     # ウィキテキストの作成
     wikitext_a = _format_wikitext_a(
-        summ, pnum, pfmrsstr) if args.table != 1 else ()
+        summ, pnum, pfmrsstr, service) if args.table != 1 else ()
     wikitext_t = _format_wikitext_t(summ,
                                     pfmrsstr,
                                     dirstr,
