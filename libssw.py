@@ -1895,6 +1895,8 @@ class DMMParser:
 
         elif tag == 'サイズ：':
             self._sm['size'] = getnext_text(prop)
+            if self._sm['size'] == 'T--- B-- W-- H':
+                self._sm['size'] = ''
             _verbose('ama size: ', self._sm['size'])
 
         return
