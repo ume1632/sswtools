@@ -348,7 +348,7 @@ _ReturnVal = _namedtuple('ReturnVal',
                           'time', 'maker', 'label', 'series',
                           'wktxt_a', 'wktxt_t'))
 
-_sub_heart = (_re.compile(r'（ハート）|◆'), r'♥')
+_sub_heart = (_re.compile(r'（ハート）|◆'), r'&#9829;')
 
 
 _IMG_URL = {'dvd':    'http://pics.dmm.co.jp/mono/movie/adult/',
