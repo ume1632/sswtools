@@ -348,7 +348,7 @@ _ReturnVal = _namedtuple('ReturnVal',
                           'time', 'maker', 'label', 'series',
                           'wktxt_a', 'wktxt_t'))
 
-_sub_heart = (_re.compile(r'（ハート）|◆'), r'♥')
+_sub_heart = (_re.compile(r'（ハート）|◆'), r'&#9829;')
 
 
 _IMG_URL = {'dvd':    'http://pics.dmm.co.jp/mono/movie/adult/',
@@ -825,7 +825,6 @@ def main(props=_libssw.Summary(), p_args=_argparse.Namespace, dmmparser=None):
                                      '',
                                      '／'.join(summ['director']),
                                      args.dir_col,
-                                     False,
                                      _build_addcols(args.add_column, summ))
         _verbose('wktxt_t: ', wktxt_t)
         return False, resp.status, _ReturnVal(summ['release'],
