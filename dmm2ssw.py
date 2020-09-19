@@ -360,6 +360,28 @@ _IMG_URL = {'dvd':    'http://pics.dmm.co.jp/mono/movie/adult/',
 # _verbose() に置き換えられる
 _verbose = None
 
+# 女優ページでメーカーに並記しないレーベル
+_IGNORE_LABEL = {'AKNR',
+                 'AROMA',
+                 'ATHENA'
+                 'AVSCollector’s',
+                 'BALTAN',
+                 'Calen',
+                 'DEEP’S',
+                 'Dogma',
+                 'GAS',
+                 'GLORY QUEST',
+                 'HHHグループ',
+                 'HOT',
+                 'K-Tribe',
+                 'Madonna',
+                 'MAXING',
+                 'Nadeshiko',
+                 'OPERA',
+                 'S1 NO.1 STYLE',
+                 'WANZ',
+                 'ながえSTYLE',
+                 '卍GROUP'}
 
 def _get_args(argv, p_args):
     """
@@ -649,6 +671,12 @@ def _check_missings(summ):
     if missings:
         _emsg('W', '取得できない情報がありました: ', ",".join(missings))
 
+def _add_label(in_label):
+    """レーベルの並記 女優ページ用"""
+    if in_label in _IGNORE_LABEL:
+        return ''
+    else:
+        return in_label.split('（')[0]
 
 def _format_wikitext_a(summ, anum, astr, service):
     """ウィキテキストの作成 女優ページ用"""
@@ -665,7 +693,12 @@ def _format_wikitext_a(summ, anum, astr, service):
         titleline = '[[{0[label]} {0[title]} {0[size]}>{0[url]}]]'.format(summ) if summ['size'] \
         else '[[{0[label]} {0[title]}>{0[url]}]]'.format(summ)
     else:
-        titleline = '[[{0[title]}（{1}）>{0[url]}]]'.format(summ, summ['maker'] or summ['label'])
+        # レーベルの並記
+        maker = summ['maker'].split('（')[0]
+        add_label = _add_label(summ['label'])
+        if add_label and (not '/' in summ['maker']) and (maker != add_label):
+            maker += '／{0}'.format(add_label)
+        titleline = '[[{0[title]}（{1}）>{0[url]}]]'.format(summ, maker)
     # シリーズ
     if summ['list_type']:
         titleline += '　[[({0[list_type]}一覧)>{0[list_page]}]]'.format(summ)
@@ -677,7 +710,7 @@ def _format_wikitext_a(summ, anum, astr, service):
         wtext += '[[{0[image_sm]}>{0[image_lg]}]]'.format(summ)
     # 出演者
     if anum not in {0, 1}:
-        wtext += '出演者：{0}\n'.format(astr)
+        wtext += '\n出演者：{0}\n'.format(astr)
     # 備考
     notes = summ['note'] + summ['others'] if summ['others'] else summ['note']
     if notes:
