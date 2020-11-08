@@ -363,17 +363,20 @@ _verbose = None
 # 女優ページでメーカーに並記しないレーベル
 _IGNORE_LABEL = {'AKNR',
                  'AROMA',
-                 'ATHENA'
+                 'ATHENA',
                  'AVSCollector’s',
                  'BALTAN',
                  'Calen',
+                 'digital ark',
                  'DEEP’S',
                  'Dogma',
+                 'gain corporation',
                  'GAS',
                  'GLORY QUEST',
                  'HHHグループ',
                  'HOT',
                  'K-Tribe',
+                 'M’s video Group',
                  'Madonna',
                  'MAXING',
                  'Nadeshiko',
@@ -672,11 +675,12 @@ def _check_missings(summ):
         _emsg('W', '取得できない情報がありました: ', ",".join(missings))
 
 def _add_label(in_label):
+    label = in_label.split('（')[0]
     """レーベルの並記 女優ページ用"""
-    if in_label in _IGNORE_LABEL:
+    if label in _IGNORE_LABEL:
         return ''
     else:
-        return in_label.split('（')[0]
+        return label
 
 def _format_wikitext_a(summ, anum, astr, service):
     """ウィキテキストの作成 女優ページ用"""
