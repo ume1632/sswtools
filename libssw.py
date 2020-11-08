@@ -1710,7 +1710,6 @@ class DMMParser:
         _verbose('title dmm: ', tdmm)
 
         title = self._chk_longtitle() or tdmm
-        title = _fix_ngword(title)
 
         title_dmm = tdmm if not _compare_title(title,
                                                *_normalize(tdmm)) else ''
@@ -2112,6 +2111,9 @@ class DMMParser:
         # タイトルの取得
         if not self._sm['title'] or self._sm['title'].startswith('__'):
             self._sm['title'], self._sm['title_dmm'] = self._ret_title()
+
+        # 伏字の解除
+        self._sm['title'] = _fix_ngword(self._sm['title'])
 
         # 作品情報の取得
         for prop in self._he.iterfind('.//td[@class="nw"]'):
