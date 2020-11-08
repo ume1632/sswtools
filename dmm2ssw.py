@@ -351,10 +351,10 @@ _ReturnVal = _namedtuple('ReturnVal',
 _sub_heart = (_re.compile(r'（ハート）|◆'), r'&#9829;')
 
 
-_IMG_URL = {'dvd':    'http://pics.dmm.co.jp/mono/movie/adult/',
-            'rental': 'http://pics.dmm.co.jp/mono/movie/',
-            'video':  'http://pics.dmm.co.jp/digital/video/',
-            'ama':    'http://pics.dmm.co.jp/digital/amateur/'}
+_IMG_URL = {'dvd':    'https://pics.dmm.co.jp/mono/movie/adult/',
+            'rental': 'https://pics.dmm.co.jp/mono/movie/',
+            'video':  'https://pics.dmm.co.jp/digital/video/',
+            'ama':    'https://pics.dmm.co.jp/digital/amateur/'}
 
 
 # _verbose() に置き換えられる
