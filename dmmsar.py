@@ -1065,7 +1065,7 @@ class BuildPage:
     def __init__(self, wikitexts, split, retrieval, a_name, a_hdr, t_hdr):
         self._wikitexts = wikitexts
         self._split = split
-        self._retlabel = libssw.RETLABEL[retrieval]
+#        self._retlabel = libssw.RETLABEL[retrieval]
         self._a_name = a_name
         self._a_hdr = a_hdr
         self._t_hdr = t_hdr
@@ -1136,7 +1136,6 @@ class BuildPage:
 
             if self._t_hdr and remainder and not self._row % 10:
                 # 10件ごとの表ヘッダの出力
-#                yield self._t_hdr.format(remainder)
                 yield self._t_hdr.format('NO')
                 verbose('Header: ', self._no)
 
