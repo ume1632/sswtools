@@ -869,7 +869,7 @@ def main(props=_libssw.Summary(), p_args=_argparse.Namespace, dmmparser=None):
                                               summ('maker', 'maker_id'),
                                               summ('label', 'label_id'),
                                               summ('series', 'series_id'),
-                                              wktxt_a=(),
+                                              wktxt_a='',
                                               wktxt_t=wktxt_t)
     elif resp.status != 200:
         return False, resp.status, ('HTTP status', resp.status)
