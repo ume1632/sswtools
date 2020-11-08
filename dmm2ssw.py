@@ -619,6 +619,7 @@ class _ResolveListpage:
                     list_type = _libssw.RETLABEL[attr]
                     # break
                 else:
+                    list_attr = ''
                     _emsg('W',
                           _libssw.RETLABEL[attr],
                           '名が80バイトを超えているのでそのページは無いものとします: ',
