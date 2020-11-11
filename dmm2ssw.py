@@ -360,7 +360,7 @@ _IMG_URL = {'dvd':    'https://pics.dmm.co.jp/mono/movie/adult/',
 # _verbose() に置き換えられる
 _verbose = None
 
-# 女優ページでメーカーに並記しないレーベル
+# 冗長なため女優ページでメーカーに並記しないレーベル
 _IGNORE_LABEL = {'AKNR',
                  'AROMA',
                  'ATHENA',
@@ -374,6 +374,7 @@ _IGNORE_LABEL = {'AKNR',
                  'GAS',
                  'GLORY QUEST',
                  'HHHグループ',
+                 'HIBINO',
                  'HOT',
                  'K-Tribe',
                  'M’s video Group',
@@ -384,6 +385,7 @@ _IGNORE_LABEL = {'AKNR',
                  'S1 NO.1 STYLE',
                  'WANZ',
                  'ながえSTYLE',
+                 'ルナティックス',
                  '卍GROUP'}
 
 def _get_args(argv, p_args):
@@ -626,10 +628,6 @@ class _ResolveListpage:
                           list_page)
 
                 _verbose('List type: {}, List page: {}'.format(list_type, list_page))
-
-                # SCOOP個別対応
-                if list_page == 'SCOOP（スクープ）':
-                    list_page = 'スクープ'
 
                 # wiki構文と衝突する文字列の置き換え
                 list_page = _libssw.trans_wikisyntax(list_page)

@@ -105,6 +105,12 @@ _RENTAL_PRECEDES = {
     '23768': 'CINEMA（シネマ）',
 }
 
+# 表記揺れ対応をするレーベル
+_WIKITITLE = {'ティッシュ':       'TISSUE',
+              'ヒプノシス':       '催眠研究所別館',
+              'BALTAN Amazoness': 'amazoness',
+}
+
 # 送信防止措置依頼されている女優
 HIDE_NAMES = {'1023995': '立花恭子',
               '1024279': '藤崎かすみ',
@@ -2905,10 +2911,13 @@ def _search_listpage(url, listname, listtype, pid):
     #     re_inbracket.split(listname.rstrip(')）')))
     _verbose('Searching listpage: listname=', listname, ', pid=', pid)
 
-    # pid(品番)で検索
+    # http:とhttps:どちらでもヒットさせる
+    search_url = _re.sub('https?://', '', url)
+
+    # urlで検索
     resp, he = open_url(
         'http://sougouwiki.com/search?keywords={}'.format(
-            quote(pid, safe='')),
+            quote(search_url, safe='')),
         cache=False)
 
     searesult = he.find_class('result-box')[0].find('p[1]/strong').tail
@@ -2916,6 +2925,10 @@ def _search_listpage(url, listname, listtype, pid):
     if searesult.strip() == 'に該当するページは見つかりませんでした。':
         _verbose('url not found on ssw')
         return ()
+
+    # 表記揺れ解消
+    if listname in _WIKITITLE:
+        listname = _WIKITITLE[listname]
 
     found = False
     while not found:
