@@ -351,29 +351,33 @@ _ReturnVal = _namedtuple('ReturnVal',
 _sub_heart = (_re.compile(r'（ハート）|◆'), r'&#9829;')
 
 
-_IMG_URL = {'dvd':    'http://pics.dmm.co.jp/mono/movie/adult/',
-            'rental': 'http://pics.dmm.co.jp/mono/movie/',
-            'video':  'http://pics.dmm.co.jp/digital/video/',
-            'ama':    'http://pics.dmm.co.jp/digital/amateur/'}
+_IMG_URL = {'dvd':    'https://pics.dmm.co.jp/mono/movie/adult/',
+            'rental': 'https://pics.dmm.co.jp/mono/movie/',
+            'video':  'https://pics.dmm.co.jp/digital/video/',
+            'ama':    'https://pics.dmm.co.jp/digital/amateur/'}
 
 
 # _verbose() に置き換えられる
 _verbose = None
 
-# 女優ページでメーカーに並記しないレーベル
+# 冗長なため女優ページでメーカーに並記しないレーベル
 _IGNORE_LABEL = {'AKNR',
                  'AROMA',
-                 'ATHENA'
+                 'ATHENA',
                  'AVSCollector’s',
                  'BALTAN',
                  'Calen',
+                 'digital ark',
                  'DEEP’S',
                  'Dogma',
+                 'gain corporation',
                  'GAS',
                  'GLORY QUEST',
                  'HHHグループ',
+                 'HIBINO',
                  'HOT',
                  'K-Tribe',
+                 'M’s video Group',
                  'Madonna',
                  'MAXING',
                  'Nadeshiko',
@@ -381,6 +385,7 @@ _IGNORE_LABEL = {'AKNR',
                  'S1 NO.1 STYLE',
                  'WANZ',
                  'ながえSTYLE',
+                 'ルナティックス',
                  '卍GROUP'}
 
 def _get_args(argv, p_args):
@@ -616,16 +621,13 @@ class _ResolveListpage:
                     list_type = _libssw.RETLABEL[attr]
                     # break
                 else:
+                    list_attr = ''
                     _emsg('W',
                           _libssw.RETLABEL[attr],
                           '名が80バイトを超えているのでそのページは無いものとします: ',
                           list_page)
 
                 _verbose('List type: {}, List page: {}'.format(list_type, list_page))
-
-                # SCOOP個別対応
-                if list_page == 'SCOOP（スクープ）':
-                    list_page = 'スクープ'
 
                 # wiki構文と衝突する文字列の置き換え
                 list_page = _libssw.trans_wikisyntax(list_page)
@@ -672,11 +674,12 @@ def _check_missings(summ):
         _emsg('W', '取得できない情報がありました: ', ",".join(missings))
 
 def _add_label(in_label):
+    label = in_label.split('（')[0]
     """レーベルの並記 女優ページ用"""
-    if in_label in _IGNORE_LABEL:
+    if label in _IGNORE_LABEL:
         return ''
     else:
-        return in_label.split('（')[0]
+        return label
 
 def _format_wikitext_a(summ, anum, astr, service):
     """ウィキテキストの作成 女優ページ用"""
