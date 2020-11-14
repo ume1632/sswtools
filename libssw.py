@@ -106,9 +106,10 @@ _RENTAL_PRECEDES = {
 }
 
 # 表記揺れ対応をするレーベル
-_WIKITITLE = {'ティッシュ':       'TISSUE',
-              'ヒプノシス':       '催眠研究所別館',
-              'BALTAN Amazoness': 'amazoness',
+_WIKITITLE = {'ティッシュ':             'TISSUE',
+              'REAL（レアルワークス）': 'REAL',
+              'ヒプノシス':             '催眠研究所別館',
+              'BALTAN Amazoness':       'amazoness',
 }
 
 # 送信防止措置依頼されている女優
@@ -1970,11 +1971,10 @@ class DMMParser:
                         _emsg('E', '出演者の「▼すべて表示する」先が取得できませんでした。')
 
                 more_url = _up.urljoin(_BASEURL_DMM, more_path)
-                resp, he_more = open_url(more_url, 'utf-8')
+                resp, he_more = open_url(more_url, 'utf-8', set_cookie='age_check_done=1')
                 _verbose('more_url opened')
 
                 p_list = _list_pfmrs(he_more.xpath('.//a/text()'))
-
             else:
                 p_list = _list_pfmrs(el.xpath('a/text()'))
 
