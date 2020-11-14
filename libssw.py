@@ -83,7 +83,10 @@ _FORCE_CHK_SALE_SR = {'79592': ('熟ズボッ！', 'videoa'),
 # 出演者情報を無視するメーカー
 _IGNORE_PERFORMERS = {'45067': 'KIプランニング',
                       '45339': '豊彦',
-                      '45352': 'リアルエレメント'}
+                      '45352': 'リアルエレメント',
+                      '46165': 'ジュエル',
+                      '46655': 'MDMA',
+                      '46656': '唾鬼'}
 
 # レンタル先行レーベル
 _RENTAL_PRECEDES = {
@@ -100,6 +103,13 @@ _RENTAL_PRECEDES = {
     '23360': 'ナックル（ながえスタイル）',
     '23474': 'ナックル（サイドビー）',
     '23768': 'CINEMA（シネマ）',
+}
+
+# 表記揺れ対応をするレーベル
+_WIKITITLE = {'ティッシュ':             'TISSUE',
+              'REAL（レアルワークス）': 'REAL',
+              'ヒプノシス':             '催眠研究所別館',
+              'BALTAN Amazoness':       'amazoness',
 }
 
 # 送信防止措置依頼されている女優
@@ -1961,11 +1971,10 @@ class DMMParser:
                         _emsg('E', '出演者の「▼すべて表示する」先が取得できませんでした。')
 
                 more_url = _up.urljoin(_BASEURL_DMM, more_path)
-                resp, he_more = open_url(more_url, 'utf-8')
+                resp, he_more = open_url(more_url, 'utf-8', set_cookie='age_check_done=1')
                 _verbose('more_url opened')
 
                 p_list = _list_pfmrs(he_more.xpath('.//a/text()'))
-
             else:
                 p_list = _list_pfmrs(el.xpath('a/text()'))
 
@@ -2902,10 +2911,13 @@ def _search_listpage(url, listname, listtype, pid):
     #     re_inbracket.split(listname.rstrip(')）')))
     _verbose('Searching listpage: listname=', listname, ', pid=', pid)
 
-    # pid(品番)で検索
+    # http:とhttps:どちらでもヒットさせる
+    search_url = _re.sub('https?://', '', url)
+
+    # urlで検索
     resp, he = open_url(
         'http://sougouwiki.com/search?keywords={}'.format(
-            quote(pid, safe='')),
+            quote(search_url, safe='')),
         cache=False)
 
     searesult = he.find_class('result-box')[0].find('p[1]/strong').tail
@@ -2913,6 +2925,10 @@ def _search_listpage(url, listname, listtype, pid):
     if searesult.strip() == 'に該当するページは見つかりませんでした。':
         _verbose('url not found on ssw')
         return ()
+
+    # 表記揺れ解消
+    if listname in _WIKITITLE:
+        listname = _WIKITITLE[listname]
 
     found = False
     while not found:
