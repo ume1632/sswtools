@@ -108,6 +108,8 @@ _RENTAL_PRECEDES = {
 # 表記揺れ対応をするレーベル
 _WIKITITLE = {'ティッシュ':             'TISSUE',
               'REAL（レアルワークス）': 'REAL',
+              'SCOOP（スクープ）':      'スクープ',
+              '頂 itadaki':             '頂_itadaki',
               'ヒプノシス':             '催眠研究所別館',
               'BALTAN Amazoness':       'amazoness',
 }
@@ -673,8 +675,8 @@ class Summary:
                  'label_id',
                  'maker',
                  'maker_id',
-                 'list_type',
-                 'list_page',
+                 'link_label',
+                 'link_series',
                  'pid',
                  'cid',
                  'image_sm',
@@ -701,8 +703,8 @@ class Summary:
                  label_id='',
                  maker='',
                  maker_id='',
-                 list_type='',
-                 list_page='',
+                 link_label='',
+                 link_series='',
                  pid='',
                  cid='',
                  image_sm='',
@@ -2926,9 +2928,10 @@ def _search_listpage(url, listname, listtype, pid):
         _verbose('url not found on ssw')
         return ()
 
-    # 表記揺れ解消
-    if listname in _WIKITITLE:
-        listname = _WIKITITLE[listname]
+    if listtype == 'レーベル':
+        # 表記揺れ解消
+        if listname in _WIKITITLE:
+            listname = _WIKITITLE[listname]
 
     found = False
     while not found:

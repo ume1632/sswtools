@@ -145,10 +145,6 @@ DMM作品ページのURL
     -s 同様だが、シリーズ一覧ではなくレーベル一覧へのリンクとして
     追加する。
 
---linklabel 一覧ページへのリンクのラベル名
-    作品一覧ページへのリンクに表示するラベル(「レーベル一覧」
-    「シリーズ一覧」など)をここで指定した文字列に置き換える。
-
 --hide-list
      一覧ページへのリンクを追加しない。
 
@@ -424,10 +420,6 @@ def _get_args(argv, p_args):
                            action='store_true',
                            default=getattr(p_args, 'hide_list', False))
 
-    argparser.add_argument('--linklabel',
-                           help='一覧ページへのリンクの表示名を置き換える',
-                           default=getattr(p_args, 'linklabel', None))
-
     argparser.add_argument('-t', '--table',
                            help='一覧ページ用の表形式ウィキテキストを作成する, 2個以上指定すると両方作成する',
                            action='count',
@@ -599,19 +591,27 @@ def _expansion(phrases, summ):
         yield ph
 
 
-class _ResolveListpage:
+class _ResolvePageLink:
     """一覧ページへのリンク情報の決定"""
     def __init__(self):
         self._unknowns = set()
 
-    def __call__(self, summ, retrieval, args):
+    def __call__(self, summ, args):
         _verbose('Processing list link')
 
-        list_type = ''
-
         for attr in ('series', 'label', 'maker'):
+            # 設定済みリンクは置き換えない
+            if (attr == 'series' and summ['link_series']) or \
+               (attr == 'label'  and summ['link_label'])  or \
+               (attr == 'maker'  and summ['link_label']):
+                continue
 
+            list_type = ''
             list_page = summ[attr]
+
+            # 検索対象が同じならレーベル一覧に統合
+            if (attr != 'label' and (list_page == summ['label'])):
+                continue
 
             if list_page:
                 if list_page == '__HIDE__':
@@ -619,23 +619,18 @@ class _ResolveListpage:
                 elif _libssw.le80bytes(list_page):
                     list_attr = attr
                     list_type = _libssw.RETLABEL[attr]
-                    # break
                 else:
                     list_attr = ''
                     _emsg('W',
                           _libssw.RETLABEL[attr],
                           '名が80バイトを超えているのでそのページは無いものとします: ',
                           list_page)
+                    continue
 
                 _verbose('List type: {}, List page: {}'.format(list_type, list_page))
 
                 # wiki構文と衝突する文字列の置き換え
                 list_page = _libssw.trans_wikisyntax(list_page)
-
-                if not args.check_listpage or \
-                (list_attr == retrieval and args.table == 1):
-                    _verbose('pass checking listpage')
-                    return list_type, list_page
 
                 if (list_type, list_page) not in self._unknowns:
 
@@ -645,21 +640,21 @@ class _ResolveListpage:
                                                         list_type,
                                                         summ['pid'])
                     if actuall:
-                        list_page = actuall
-                        return list_type, list_page
+                        if attr == 'series':
+                            summ['link_series'] = actuall
+                        else:
+                            summ['link_label'] = actuall
+                            return
                     else:
                         _emsg('W', list_type,
-                            '一覧ページが見つからなくてもDMMのものを採用しません')
+                            '一覧ページが見つかりません')
                         _emsg('W', list_type, ': ', list_page)
                         if __name__ != '__main__':
                             _emsg('I', 'タイトル: ', summ['title'],
                                 ' ({})'.format(summ['pid']))
                         self._unknowns.add((list_type, list_page))
-        else:
-            return '', ''
 
-
-_resolve_listpage = _ResolveListpage()
+_resolve_pagelink = _ResolvePageLink()
 
 
 def _build_addcols(add_column, summ):
@@ -702,9 +697,12 @@ def _format_wikitext_a(summ, anum, astr, service):
         if add_label and (not '/' in summ['maker']) and (maker != add_label):
             maker += '／{0}'.format(add_label)
         titleline = '[[{0[title]}（{1}）>{0[url]}]]'.format(summ, maker)
-    # シリーズ
-    if summ['list_type']:
-        titleline += '　[[({0[list_type]}一覧)>{0[list_page]}]]'.format(summ)
+    # レーベル一覧へのリンク
+    if summ['link_label']:
+        titleline += '　[[(レーベル一覧)>{0}]]'.format(summ['link_label'])
+    # シリーズ一覧へのリンク
+    if summ['link_series']:
+        titleline += '　[[(シリーズ一覧)>{0}]]'.format(summ['link_series'])
     wtext += titleline + '\n'
     # 画像
     if service == 'ama':
@@ -811,10 +809,8 @@ def main(props=_libssw.Summary(), p_args=_argparse.Namespace, dmmparser=None):
 
         summ.update(props)
 
-    for attr, typ in (('series', 'シリーズ'), ('label', 'レーベル')):
-        if getattr(args, attr):
-            summ['list_type'] = typ
-            summ['list_page'] = getattr(args, attr)
+    summ['link_label'] = getattr(args, 'label')
+    summ['link_series'] = getattr(args, 'series')
 
     retrieval = getattr(p_args, 'retrieval',
                         'series' if args.as_series else 'find')
@@ -933,15 +929,11 @@ def main(props=_libssw.Summary(), p_args=_argparse.Namespace, dmmparser=None):
     _verbose('summ[title]: ', summ['title'])
     _verbose('summ[title_dmm]: ', summ['title_dmm'])
 
-    # シリーズ/レーベル一覧へのリンク情報の設定
-    # 一覧ページの直接指定があればそれを、なければ シリーズ > レーベル で決定
-    if not (args.hide_list or summ['list_type']):
-        summ['list_type'], summ['list_page'] = _resolve_listpage(summ,
-                                                                 retrieval,
-                                                                 args)
-    if args.linklabel:
-        summ['list_type'] = args.linklabel
-    _verbose('summ[list_page]: ', summ['list_page'])
+    # レーベル/シリーズ一覧へのリンク情報の設定
+    if (not args.hide_list) and args.check_listpage:
+        _resolve_pagelink(summ, args)
+    _verbose('summ[link_label]: ', summ['link_label'])
+    _verbose('summ[link_series]: ', summ['link_series'])
 
     if args.note:
         summ['note'] = list(_expansion(args.note, summ)) + summ['note']
