@@ -344,10 +344,6 @@ DMMから女優、シリーズ、メーカー、あるいはレーベルのID(DM
     取得して付加する。
     詳細はdmm2ssw.pyの説明参照。
 
---enable-check-smm
-    このオプションが与えられるとDMM上に出演者情報がないときにSMMを検索する。
-    (https://supermediamall.com/ のドメイン移行及び仕様変更のため現在動作未確認)
-
 --check-rental
     レンタル先行メーカーなのにレンタル版以外が指定されていた場合
     レンタル版のリリース情報をチェックしてレンタルが早ければ
@@ -719,11 +715,6 @@ def get_args(argv):
                            dest='follow_rdr',
                            action='store_false',
                            default=True)
-    argparser.add_argument('--enable-check-smm',
-                           help='出演者情報がないときにSMMを検索する',
-                           action='store_true',
-                           dest='smm',
-                           default=False)
     argparser.add_argument('--check-rental',
                            help='レンタル先行メーカーでレンタル版じゃなかったのとき'
                            'レンタル版のリリースをチェックする',
@@ -826,7 +817,7 @@ def get_args(argv):
         args.split = 0
 
     if args.fastest:
-        for a in ('follow_rdr', 'smm', 'check_rental', 'pass_bd',
+        for a in ('follow_rdr', 'check_rental', 'pass_bd',
                   'check_listpage', 'longtitle'):
             setattr(args, a, False)
 
@@ -1296,8 +1287,7 @@ def main(argv=None):
                                  n_i_s=args.n_i_s,
                                  longtitle=args.longtitle,
                                  check_rental=args.check_rental,
-                                 check_rltd=args.check_rltd,
-                                 check_smm=args.smm)
+                                 check_rltd=args.check_rltd)
 
     if args.retrieval in {'maker', 'label', 'series'}:
         keyiter = libssw.sort_by_id(products)
