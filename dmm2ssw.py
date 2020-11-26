@@ -1024,7 +1024,8 @@ def main(props=_libssw.Summary(), p_args=_argparse.Namespace, dmmparser=None):
                 for a in pages:
                     _libssw.open_ssw(a[1] or a[0])
             if args.table:
-                _libssw.open_ssw(summ['list_page'])
+                _libssw.open_ssw(summ['link_label'])
+                _libssw.open_ssw(summ['link_series'])
 
 
 if __name__ == '__main__':
