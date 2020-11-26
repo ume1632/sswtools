@@ -34,18 +34,7 @@ HunterおよびATOMについては対応不可(hunterpp.pyにて対応)。
 削除依頼が出ている女優名は強制的に「(削除依頼対応)」に置き換えられる。
 
 ■SMM(supermm.jp)からの出演者情報の補完
-DMM上から出演者情報が得られなかった場合、以下の条件においてSMMの
-作品ページから出演者情報の取得を試みる。
-・DVD/Blu-rayセル版であること
-・Firefoxがインストールされていること
-・Firefox上でSMMのCookieを受け入れる状態になっていること
-・一度FirefoxからデフォルトプロファイルでSMMのアダルトページに
-  アクセスして年齢認証を行っていること(Cookieの期限が24時間のよう
-  なので、1日に1回行えばよいはず)
-SMM上でも仮の名前のときがあるため、SMM上ですべてひらがなの名前の
-ときはその名前の女優名が存在しなければ内部リンクにしない。
---disable-check-smm オプションが与えられると出演者情報がなくてもSMMを
-見に行かない。
+⇒サイト閉鎖のため廃止
 
 ■ジュエル系の出演者名は無視
 ジュエル系の出演者名は本人の女優名ではないので出演者情報があっても
@@ -247,10 +236,6 @@ DMM作品ページのURL
 -f, --disable-follow-redirect
     指定・取得した出演者名のwikiページがリダイレクトページかどうか
     チェックしない。
-
---enable-check-smm
-    このオプションが与えられるとDMM上に出演者情報がないときにSMMを検索する。
-    (https://supermediamall.com/ のドメイン移行及び仕様変更のため現在動作未確認)
 
 --disable-check-rental
     レンタル先行レーベルなのにレンタル以外のサービスの作品URLだった
@@ -469,11 +454,6 @@ def _get_args(argv, p_args):
                            dest='follow_rdr',
                            action='store_false',
                            default=getattr(p_args, 'follow_rdr', True))
-    argparser.add_argument('--enable-check-smm',
-                           help='出演者情報がないときにSMMを検索する',
-                           action='store_true',
-                           dest='smm',
-                           default=False)
     argparser.add_argument('--disable-check-rental',
                            help='レンタル先行レーベルでもレンタル版のリリースをチェックしない',
                            dest='check_rental',
@@ -556,7 +536,7 @@ def _get_args(argv, p_args):
         _libssw.clear_cache()
 
     if args.fastest:
-        for a in ('follow_rdr', 'smm', 'check_rental', 'check_listpage',
+        for a in ('follow_rdr', 'check_rental', 'check_listpage',
                   'check_rltd', 'longtitle'):
             setattr(args, a, False)
 
@@ -881,8 +861,7 @@ def main(props=_libssw.Summary(), p_args=_argparse.Namespace, dmmparser=None):
         dmmparser = _libssw.DMMParser(autostrip=args.autostrip,
                                       longtitle=args.longtitle,
                                       check_rental=args.check_rental,
-                                      check_rltd=args.check_rltd,
-                                      check_smm=args.smm)
+                                      check_rltd=args.check_rltd)
 
     try:
         summ.update(dmmparser(he, service, summ, ignore_pfmrs=rawpfmrs))
@@ -1024,7 +1003,8 @@ def main(props=_libssw.Summary(), p_args=_argparse.Namespace, dmmparser=None):
                 for a in pages:
                     _libssw.open_ssw(a[1] or a[0])
             if args.table:
-                _libssw.open_ssw(summ['list_page'])
+                _libssw.open_ssw(summ['link_label'])
+                _libssw.open_ssw(summ['link_series'])
 
 
 if __name__ == '__main__':

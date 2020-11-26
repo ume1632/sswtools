@@ -56,7 +56,6 @@ RETLABEL = {'series': 'シリーズ',
             'actress': '女優'}
 
 _BASEURL_DMM = 'https://www.dmm.co.jp'
-_BASEURL_SMM = 'http://supermm.jp'
 
 _SVC_URL = {'https://www.dmm.co.jp/mono/dvd/':       'dvd',
             'https://www.dmm.co.jp/rental/':         'rental',
@@ -1494,146 +1493,6 @@ class _RetrieveTitlePlum:
 # _ret_plum_se = _RetrieveTitlePlum('h_113se')
 
 
-class __TrySMM:
-    """
-    SMMから出演者情報を得てみる
-
-    SMM通販新品から「品番 + タイトルの先頭50文字」で検索、ヒットした作品のページの
-    「この作品に出演している女優」を見る
-
-    返り値:
-    女優情報があった場合はその人名のリスト、なければ空のタプル
-    """
-    # 1年以内にリリース実績のある実在するひらがなのみで4文字以下の名前 (2015-10-05現在)
-    _allhiraganas = ('ありさ', 'くるみ', 'さやか', 'しずく', 'すみれ',
-                     'つばさ', 'つぼみ', 'なごみ', 'ひなぎく', 'まなか',
-                     'まりか', 'めぐり', 'ももか', 'ゆいの', 'ゆうみ', 'りんか')
-
-    def __init__(self):
-        self.title_smm = ''
-        # self._cookie = get_cookie()
-        self._cookie = 'afsmm=10163915; TONOSAMA_BATTA=0bf596e86b6853db3b7cc52cdd4ff239; ses_age=18'
-
-    def _search(self, cate, pid, title):
-
-        search_url = '{}/search/image/-_-/cate/{}/word/{}'.format(
-            # _BASEURL_SMM, cate, pid)
-            _BASEURL_SMM, cate, _up.quote('{} {}'.format(pid, title[:50])))
-
-        for i in range(2):
-            resp, he_result = open_url(search_url, set_cookie=self._cookie)
-
-            if resp.status != 200:
-                _verbose('smm search failed: url={}, status={}'.format(
-                    search_url, resp.status))
-                return None
-
-            # SMM上で年齢認証済みかどうかの確認
-            confirm = he_result.get_element_by_id('confirm', None)
-            if confirm is not None:
-                # id='confirm' があるので未認証
-                # Firefox の cookie 情報を得てみる
-                self._cookie = get_cookie()
-                if not self._cookie:
-                    _emsg('W', 'SMMの年齢認証が完了していません。')
-                    return None
-            else:
-                _verbose('Age confirmed')
-                return he_result
-        else:
-            _emsg('W', 'SMMの年齢認証が完了していません。')
-            return None
-
-    def _is_existent(self, name):
-        """その名前の女優が実際にいるかどうかDMM上でチェック"""
-        _verbose('is existent: ', name)
-        url = '{}/-/search/=/searchstr={}/'.format(BASEURL_ACT, quote(name))
-        while True:
-            resp, he = open_url(url)
-            if any(name == a.find('td[2]/a').text.strip()
-                   for a in he.iterfind('.//tr[@class="list"]')):
-                return True
-
-            pagin = he.find('.//td[@class="line"]/a[last()]')
-            if pagin is not None and pagin.text == '次へ':
-                url = BASEURL_ACT + pagin.get('href')
-            else:
-                break
-
-        return None
-
-    def _chk_anonym(self, pfmr):
-        """
-        SMM出演者情報でひらがなのみの名前の場合代用名かどうかチェック
-
-        名前がひらがなのみで4文字以下で既知のひらがな女優名でなければ代用名とみなす
-        """
-        # if p_neghirag.search(pfmr) or self._is_existent(pfmr):
-        if re_neghirag.search(pfmr) or \
-           len(pfmr) > 4 or \
-           pfmr in self._allhiraganas:
-            return (pfmr, '', '')
-        else:
-            return ('', '', '({})'.format(pfmr))
-
-    def __call__(self, pid, title):
-        _verbose('Trying SMM...')
-        # SMMで検索(品番+タイトル)
-        if not self._cookie:
-            _verbose('could not retrieve cookie')
-            return []
-
-        for cate in 20, 6:
-            # 通販新品(動画よりリリースが早い) → 単品動画 (売り切れがない) で検索
-            he_search = self._search(cate, pid, title)
-            items = he_search.find_class('imgbox')
-            if len(items):
-                _verbose('Found on smm (cate: {})'.format(cate))
-                break
-            else:
-                _verbose('Not found on smm (cate: {})'.format(cate))
-        else:
-            _verbose('smm: No search result')
-            return []
-
-        # DMM、SMM各タイトルを正規化して比較、一致したらそのページを読み込んで
-        # 出演者情報を取得
-        title, title_s = _normalize(title)
-        _verbose('title norm: {}, {}'.format(title, title_s))
-
-        for item in items:
-            path = item.find('a').get('href')
-            self.title_smm = item.find('a/img').get('alt')
-
-            # タイトルが一致しなければ次へ
-            if not _compare_title(self.title_smm, title, title_s):
-                _verbose('title unmatched')
-                continue
-
-            # 作品ページを読み込んで出演者を取得
-            prod_url = _up.urljoin(_BASEURL_SMM, path)
-            _verbose('smm: prod_url: ', prod_url)
-
-            resp, he_prod = open_url(prod_url, set_cookie=self._cookie)
-
-            pid_smm = he_prod.find(
-                './/div[@class="detailline"]/dl/dd[7]').text.strip()
-            if pid != pid_smm:
-                _verbose('pid unmatched')
-                continue
-
-            smmpfmrs = he_prod.xpath('//li[@id="all_cast_li"]/a/text()')
-            _verbose('smmpfmrs: ', smmpfmrs)
-
-            return [self._chk_anonym(p) for p in smmpfmrs]
-
-        else:
-            _verbose('all titles are mismatched')
-            return []
-
-_try_smm = __TrySMM()
-
-
 class OmitTitleException(Exception):
     """総集編など除外タイトル例外"""
     def __init__(self, key, word):
@@ -1656,7 +1515,6 @@ class DMMParser:
                  start_date=None, start_pid_s=None, filter_pid_s=None,
                  autostrip=True, pass_bd=False, n_i_s=False,
                  longtitle=False, check_rental=False, check_rltd=False,
-                 check_smm=False,
                  deeper=True, quiet=False):
         self._no_omits = no_omits
         self._patn_pid = patn_pid
@@ -1669,7 +1527,6 @@ class DMMParser:
         self._longtitle = longtitle
         self._check_rental = check_rental
         self._check_rltd = check_rltd
-        self._check_smm = check_smm
         self._deeper = deeper
         self._quiet = quiet
 
@@ -1931,7 +1788,7 @@ class DMMParser:
 
         return img_lg, img_sm
 
-    def _ret_performers(self, gvnpfmrs, smm):
+    def _ret_performers(self, gvnpfmrs):
         """
         出演者の取得
         (女優名, リダイレクト先, おまけ文字列) のタプルを返すジェネレータ
@@ -1946,7 +1803,7 @@ class DMMParser:
         def _list_pfmrs(plist):
             return [(_trim_name(p.strip()), '', '') for p in plist]
 
-        _verbose('Retrieving performers... (smm:{})'.format(smm))
+        _verbose('Retrieving performers... ')
 
         el = self._he.get_element_by_id('performer', ())
         len_el = len(el)
@@ -1979,22 +1836,12 @@ class DMMParser:
                 p_list = _list_pfmrs(he_more.xpath('.//a/text()'))
             else:
                 p_list = _list_pfmrs(el.xpath('a/text()'))
-
-        elif smm:
-            # 出演者情報がなければSMMを見てみる(セル版のときのみ)
-            p_list = _try_smm(self._sm['pid'], self._sm['title'])
-
-            if p_list:
-                _emsg('I', '出演者情報をSMMより補完しました: ', self._sm['pid'])
-                _emsg('I', 'DMM: ', self._sm['title'])
-                _emsg('I', 'SMM: ', _try_smm.title_smm)
-                _emsg('I', '出演者: ', ','.join(p[0] or p[2] for p in p_list))
         else:
             p_list = []
 
         # pfilter = ''.join(_chain.from_iterable(p_list))
 
-        # DMM/SMMから取得した出演者をyield
+        # DMMから取得した出演者をyield
         return p_list.copy()
         # for name in p_list:
         #     yield name
@@ -2213,8 +2060,7 @@ class DMMParser:
             # 出演者の取得
             # self._sm['actress'] = list(
             self._sm['actress'] = self._ret_performers(
-                self._sm['actress'],
-                self._check_smm and service == 'dvd')
+                self._sm['actress'])
 
             # レンタル版で出演者情報がない/不足しているかもなとき他のサービスで調べてみる
             if self._deeper and self._check_rltd and self._force_chk_sale:
@@ -3222,57 +3068,6 @@ def ret_apacheinfo(elems):
             'と'.join(missings)))
 
     return pid, actress, director
-
-
-def get_cookie():
-    """
-    FirefoxからSMMのCookieを取得
-
-    取得に必要な条件が満たされなければ黙ってFalseを返す
-    """
-    if _sys.platform == 'win32':
-        fx_dir = _Path(_os.environ['APPDATA']).joinpath(
-            'Mozilla/Firefox/Profiles')
-    elif _sys.platform == 'darwin':
-        fx_dir = _Path(_os.environ['HOME']).joinpath(
-            'Library/Application Support/Firefox/Profiles')
-    elif _sys.platform in {'os2', 'os2emx'}:
-        return False
-    else:
-        fx_dir = _Path(_os.environ['HOME']).joinpath('.mozilla/firefox')
-    _verbose('fx_dir: ', fx_dir)
-
-    if not fx_dir.exists():
-        _verbose('Firefox profile dir not found')
-        return False
-
-    for d in fx_dir.glob('*'):
-        if d.suffix == '.default':
-            prof_dir = d
-            _verbose('firefox profile: ', prof_dir)
-            break
-    else:
-        _verbose('firefox default profile not found')
-        return False
-
-    conn = _sqlite3.connect(str(fx_dir / prof_dir / 'cookies.sqlite'))
-    cur = conn.cursor()
-    cur.execute('select value from moz_cookies where '
-                'host="supermm.jp" and name="cok_detail_history"')
-    batta = cur.fetchone()
-
-    if not batta:
-        _verbose('smm cookies not found')
-        return False
-    else:
-        batta = batta[0]
-
-    cur.execute('select value from moz_cookies where '
-                'baseDomain="supermm.jp" and name="afsmm"')
-    afsmm = cur.fetchone()[0]
-    cur.close()
-
-    return 'TONOSAMA_BATTA={}; afsmm={}; ses_age=18;'.format(batta, afsmm)
 
 
 def ssw_searchnext(el):
