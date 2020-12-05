@@ -2117,6 +2117,8 @@ class DMMTitleListParser:
 
         for ttl in titles:
             t_el = ttl.find('a')
+            if t_el is None:
+                continue
             s_el = t_el.find('span')
             if s_el is not None:
                 # セール情報を除去
