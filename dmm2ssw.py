@@ -686,12 +686,12 @@ def _format_wikitext_a(summ, anum, astr, service):
     wtext += titleline + '\n'
     # 画像
     if service == 'ama':
-        wtext += '[[&ref({0[image_lg]},147)>{0[image_lg]}]]'.format(summ)
+        wtext += '[[&ref({0[image_lg]},147)>{0[image_lg]}]]\n'.format(summ)
     else:
-        wtext += '[[{0[image_sm]}>{0[image_lg]}]]'.format(summ)
+        wtext += '[[{0[image_sm]}>{0[image_lg]}]]\n'.format(summ)
     # 出演者
     if anum not in {0, 1}:
-        wtext += '\n出演者：{0}\n'.format(astr)
+        wtext += '出演者：{0}\n'.format(astr)
     # 備考
     notes = summ['note'] + summ['others'] if summ['others'] else summ['note']
     if notes:
@@ -700,7 +700,7 @@ def _format_wikitext_a(summ, anum, astr, service):
     return wtext
 
 
-def _format_wikitext_t(summ, astr, dstr, dir_col, add_column):
+def _format_wikitext_t(summ, astr, dstr, dir_col, add_column, retrieval):
     """ウィキテキストの作成 table形式"""
     wtext = ''
 
@@ -731,7 +731,10 @@ def _format_wikitext_t(summ, astr, dstr, dir_col, add_column):
     wtext += '|{0[release]}'.format(summ).replace('/', '-')
 
     # 備考
-    wtext += '|{}|'.format('、'.join(summ['note']))
+    if retrieval == 'label' and summ['link_series']:
+        wtext += '|[[シリーズ一覧>{0}]]|'.format(summ['link_series'])
+    else:
+        wtext += '|{}|'.format('、'.join(summ['note']))
 
     return wtext
 
@@ -837,7 +840,8 @@ def main(props=_libssw.Summary(), p_args=_argparse.Namespace, dmmparser=None):
                                      '',
                                      '／'.join(summ['director']),
                                      args.dir_col,
-                                     _build_addcols(args.add_column, summ))
+                                     _build_addcols(args.add_column, summ),
+                                     retrieval)
         _verbose('wktxt_t: ', wktxt_t)
         return False, resp.status, _ReturnVal(summ['release'],
                                               summ['pid'],
@@ -966,7 +970,8 @@ def main(props=_libssw.Summary(), p_args=_argparse.Namespace, dmmparser=None):
                                     pfmrsstr,
                                     dirstr,
                                     args.dir_col,
-                                    add_column) if args.table else ''
+                                    add_column,
+                                    retrieval) if args.table else ''
 
     if __name__ != '__main__':
         # モジュール呼び出しならタプルで返す。
