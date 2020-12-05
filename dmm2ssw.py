@@ -700,7 +700,7 @@ def _format_wikitext_a(summ, anum, astr, service):
     return wtext
 
 
-def _format_wikitext_t(summ, astr, dstr, dir_col, add_column):
+def _format_wikitext_t(summ, astr, dstr, dir_col, add_column, retrieval):
     """ウィキテキストの作成 table形式"""
     wtext = ''
 
@@ -731,7 +731,10 @@ def _format_wikitext_t(summ, astr, dstr, dir_col, add_column):
     wtext += '|{0[release]}'.format(summ).replace('/', '-')
 
     # 備考
-    wtext += '|{}|'.format('、'.join(summ['note']))
+    if retrieval == 'label' and summ['link_series']:
+        wtext += '|[[シリーズ一覧>{0}]]|'.format(summ['link_series'])
+    else:
+        wtext += '|{}|'.format('、'.join(summ['note']))
 
     return wtext
 
