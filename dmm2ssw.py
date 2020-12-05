@@ -686,12 +686,12 @@ def _format_wikitext_a(summ, anum, astr, service):
     wtext += titleline + '\n'
     # 画像
     if service == 'ama':
-        wtext += '[[&ref({0[image_lg]},147)>{0[image_lg]}]]'.format(summ)
+        wtext += '[[&ref({0[image_lg]},147)>{0[image_lg]}]]\n'.format(summ)
     else:
-        wtext += '[[{0[image_sm]}>{0[image_lg]}]]'.format(summ)
+        wtext += '[[{0[image_sm]}>{0[image_lg]}]]\n'.format(summ)
     # 出演者
     if anum not in {0, 1}:
-        wtext += '\n出演者：{0}\n'.format(astr)
+        wtext += '出演者：{0}\n'.format(astr)
     # 備考
     notes = summ['note'] + summ['others'] if summ['others'] else summ['note']
     if notes:
