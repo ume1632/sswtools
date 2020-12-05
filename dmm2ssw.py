@@ -840,7 +840,8 @@ def main(props=_libssw.Summary(), p_args=_argparse.Namespace, dmmparser=None):
                                      '',
                                      '／'.join(summ['director']),
                                      args.dir_col,
-                                     _build_addcols(args.add_column, summ))
+                                     _build_addcols(args.add_column, summ),
+                                     retrieval)
         _verbose('wktxt_t: ', wktxt_t)
         return False, resp.status, _ReturnVal(summ['release'],
                                               summ['pid'],
@@ -969,7 +970,8 @@ def main(props=_libssw.Summary(), p_args=_argparse.Namespace, dmmparser=None):
                                     pfmrsstr,
                                     dirstr,
                                     args.dir_col,
-                                    add_column) if args.table else ''
+                                    add_column,
+                                    retrieval) if args.table else ''
 
     if __name__ != '__main__':
         # モジュール呼び出しならタプルで返す。
