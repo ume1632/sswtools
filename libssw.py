@@ -114,9 +114,14 @@ _WIKITITLE = {'ティッシュ':             'TISSUE',
 }
 
 # 送信防止措置依頼されている女優
-HIDE_NAMES = {'1023995': '立花恭子',
-              '1024279': '藤崎かすみ',
-              '1026305': '北野ひな'}
+HIDE_NAMES = {  '1004622': '大谷佳香',
+                '1013226': '星ヰいちご',
+                '1022948': '市川まひろ',
+                '1023995': '立花恭子',
+                '1024279': '藤崎かすみ',
+                '1026305': '北野ひな',
+                '1043328': '熊宮由乃',
+}
 HIDE_NAMES_V = HIDE_NAMES.values()
 
 _GENRE_BD = '6104'  # Blu-rayのジャンルID
@@ -2112,6 +2117,8 @@ class DMMTitleListParser:
 
         for ttl in titles:
             t_el = ttl.find('a')
+            if t_el is None:
+                continue
             s_el = t_el.find('span')
             if s_el is not None:
                 # セール情報を除去
