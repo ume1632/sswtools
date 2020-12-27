@@ -327,6 +327,7 @@ _emsg = _libssw.Emsg(_libssw.ownname(__file__))
 _ReturnVal = _namedtuple('ReturnVal',
                          ('release', 'pid', 'title', 'title_dmm', 'url',
                           'time', 'maker', 'label', 'series',
+                          'actress', 'link_label', 'link_series',
                           'wktxt_a', 'wktxt_t'))
 
 _sub_heart = (_re.compile(r'（ハート）|◆'), r'&#9829;')
@@ -358,6 +359,7 @@ _IGNORE_LABEL = {'AKNR',
                  'HIBINO',
                  'HOT',
                  'K-Tribe',
+                 'LOTUS',
                  'M’s video Group',
                  'Madonna',
                  'MAXING',
@@ -852,6 +854,9 @@ def main(props=_libssw.Summary(), p_args=_argparse.Namespace, dmmparser=None):
                                               summ('maker', 'maker_id'),
                                               summ('label', 'label_id'),
                                               summ('series', 'series_id'),
+                                              summ['actress'],
+                                              summ['link_label'],
+                                              summ['link_series'],
                                               wktxt_a='',
                                               wktxt_t=wktxt_t)
     elif resp.status != 200:
@@ -984,6 +989,9 @@ def main(props=_libssw.Summary(), p_args=_argparse.Namespace, dmmparser=None):
                                              summ('maker', 'maker_id'),
                                              summ('label', 'label_id'),
                                              summ('series', 'series_id'),
+                                             summ['actress'],
+                                             summ['link_label'],
+                                             summ['link_series'],
                                              wikitext_a,
                                              wikitext_t)
     else:
