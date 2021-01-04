@@ -35,7 +35,7 @@ def open_wiki(*pages):
         resp, he = _libssw.open_url(url)
         if resp.status == 200:
             dest = _libssw._rdrparser(p, he)
-            if dest != p:
+            if dest != p and dest != '':
                 # リダイレクト先を再度読み込み
                 url = _up.urljoin('http://sougouwiki.com/d/', _libssw.quote(dest))
                 resp, he = _libssw.open_url(url)
