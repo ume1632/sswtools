@@ -704,6 +704,10 @@ def _format_wikitext_a(summ, anum, astr, service):
 
 def _format_wikitext_t(summ, astr, dstr, dir_col, add_column, retrieval):
     """ウィキテキストの作成 table形式"""
+    if summ['label'] == 'SOD女子社員':
+        # SOD女子社員シリーズ個別対応
+        return _format_wikitext_t_shyn(summ, astr)
+
     wtext = ''
 
     # 品番
@@ -737,6 +741,38 @@ def _format_wikitext_t(summ, astr, dstr, dir_col, add_column, retrieval):
         wtext += '|[[シリーズ一覧>{0}]]|'.format(summ['link_series'])
     else:
         wtext += '|{}|'.format('、'.join(summ['note']))
+
+    return wtext
+
+
+def _format_wikitext_t_shyn(summ, astr):
+    """ウィキテキストの作成 table形式 SOD女子社員専用"""
+    wtext = '-'
+
+    if summ['media'] == 'ビデオ動画':
+        wtext += '【動画】'
+
+    # サブタイトル
+    wtext += '[[&color(red){{\'\'{0[subtitle]}\'\'}}>{0[url]}]]\n'.format(summ)
+
+    # 品番
+    wtext += '|[[{0[pid]}>{0[url]}]]'.format(summ) if summ['url'] \
+             else '|{0[pid]}'.format(summ)
+
+    # 画像
+    wtext += '|[[{0[image_sm]}>{0[image_lg]}]]'.format(summ) if summ['url'] \
+             else '|'
+
+    # 発売日
+    wtext += '|{0[release]}|\n'.format(summ).replace('/', '-')
+
+    # 表ヘッダ
+    wtext += '|~NAME|ACTRESS|NOTE|\n'
+
+    # 出演者
+    for shown, dest, parened in summ['actress']:
+        wtext += '|{0}|[[{1}]]||\n'.format(shown, dest) if dest \
+                else '|{}|[[ ]]||\n'.format(shown)
 
     return wtext
 
