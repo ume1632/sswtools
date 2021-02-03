@@ -219,7 +219,7 @@ def heyzoParser(soup, summ):
 #----------------------------
 def caribParser(soup, summ):
     # タイトル取得
-    summ['title'] = soup.find('h1', itemprop='name').string.replace('〜','～')
+    summ['title'] = soup.find('h1', itemprop='name').string.replace('〜','～').replace(']','&#93;')
 
     # 女優一覧取得
     detail_spec = soup.find('li', class_='movie-spec')
