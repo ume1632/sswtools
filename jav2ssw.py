@@ -41,6 +41,9 @@ vThumbnail = {  'ラグジュTV',
                 'プレステージプレミアム(PRESTIGE PREMIUM)',
                 'ARA',
                 '黒蜜',
+                'MOON FORCE',
+                'KANBi',
+                '#きゅんです',
 }
 
 
@@ -793,6 +796,10 @@ def mgsFormat_a(summ):
 
     # タイトル
     wtext += summ['subtitle'].replace('~~', '　')
+
+    # レーベル（※慣例的に一部レーベルのみつけている）
+    if summ['label'] == '投稿マーケット素人イッてQ' or summ['label'] == 'MOON FORCE':
+        wtext += "（{0}）".format(summ['label'])
 
     # URL
     wtext += '>'
