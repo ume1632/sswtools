@@ -88,30 +88,17 @@ _IGNORE_PERFORMERS = {'45067': 'KIプランニング',
                       '46655': 'MDMA',
                       '46656': '唾鬼'}
 
-# レンタル先行レーベル
-_RENTAL_PRECEDES = {
-    '51':    'God',
-    '419':   'MANIAC（クリスタル）',
-    '664':   'LEO',
-    '3548':  'ATHENA',
-    '6172':  'アートビデオSM/妄想族',
-    '4285':  'FAプロ',
-    '21383': 'FAプロ 熟女',
-    '21405': 'FAプロ 赤羽',
-    '22815': 'Fプロジェクト',
-    '5940':  'ながえSTYLE',
-    '23360': 'ナックル（ながえスタイル）',
-    '23474': 'ナックル（サイドビー）',
-    '23768': 'CINEMA（シネマ）',
+# 表記揺れ対応をするレーベル
+_WIKITITLE_L = {'ティッシュ':             'TISSUE',
+               'REAL（レアルワークス）': 'REAL',
+               'SCOOP（スクープ）':      'スクープ',
+               '頂 itadaki':             '頂_itadaki',
+               'ヒプノシス':             '催眠研究所別館',
+               'BALTAN Amazoness':       'amazoness',
 }
 
-# 表記揺れ対応をするレーベル
-_WIKITITLE = {'ティッシュ':             'TISSUE',
-              'REAL（レアルワークス）': 'REAL',
-              'SCOOP（スクープ）':      'スクープ',
-              '頂 itadaki':             '頂_itadaki',
-              'ヒプノシス':             '催眠研究所別館',
-              'BALTAN Amazoness':       'amazoness',
+# 表記揺れ対応をするシリーズ
+_WIKITITLE_S = {'我慢できれば生中出しSEX！':    '我慢できれば生★中出しSEX！',
 }
 
 # 送信防止措置依頼されている女優
@@ -552,14 +539,16 @@ _IV_PREFIX = (
 _ROOKIE = ('rki', '9rki')
 
 # 既定のリンク先は同名別女優がいるためリダイレクトにできない女優をあらかじめ登録
-_REDIRECTS = {'黒木麻衣':  '花野真衣',
+_REDIRECTS = {'黒木麻衣':   '花野真衣',
               '若菜あゆみ': '若菜あゆみ(人妻)',
               '藤原ひとみ': '藤原ひとみ(kawaii*)',
               '佐々木玲奈': '佐々木玲奈(2013)',
-              'すみれ':    '東尾真子',
-              'EMIRI':    '丘咲エミリ',
-              '松嶋葵':    '松嶋葵（2014）',
-              '和久井ナナ': 'ふわりゆうき'}
+              'すみれ':     '東尾真子',
+              'EMIRI':      '丘咲エミリ',
+              '松嶋葵':     '松嶋葵（2014）',
+              '和久井ナナ': 'ふわりゆうき',
+              '松岡すず':   '松岡すず(2020)',
+}
 
 # FANZA独自の伏字 解除リスト
 _NGWORD = {
@@ -1662,10 +1651,6 @@ class DMMParser:
             if lbid in _OMIT_LABEL:
                 self._mark_omitted('総集編', _OMIT_LABEL[lbid])
 
-            # レンタル先行レーベルチェック
-            if lbid in _RENTAL_PRECEDES:
-                self._rental_pcdr = True
-
             self._sm['label_id'] = lbid
             _verbose('label: ', self._sm['label'])
 
@@ -2008,45 +1993,6 @@ class DMMParser:
         sale_data = None
         # if self.deeper and service != 'ama' and __name__ != '__main__':
         if self._deeper and service != 'ama':
-            if self._rental_pcdr and self._check_rental:
-                # レンタル先行メーカーチェック
-                if service != 'rental':
-                    # レンタル先行メーカーなのにレンタル版のURLじゃなかったらレンタル版を
-                    # 調べてリリースの早い方を採用
-                    _verbose('checking rental...')
-                    rental_data = self._get_otherscontent('rental')
-                    if rental_data:
-                        _emsg('W',
-                              'レンタル版のリリースが早いためレンタル版に'
-                              '変更します。')
-                        if __name__ != '__main__':
-                            _emsg('W', self._sm['title'])
-                        self.data_replaced = 'rental'
-                        # レンタル版データで置き換え
-                        # sale_rel = self._sm['release']
-                        self._sm.update(rental_data)
-
-                elif self._check_rltd:
-                    # レンタル版URLだったときのセル版へのリンクチェック
-                    # セル版があればそれへのリンクとリリース日を、なければレンタル版と付記
-                    _verbose('checking sale...')
-                    sale_data = self._get_otherscontent('dvd')
-                    if sale_data:
-                        self._sm['others'].append(
-                            self._link2other(sale_data['url'],
-                                             'セル',
-                                             sale_data['release']))
-                    else:
-                        self._sm['others'].append('※レンタル版')
-
-            # if service == 'video':
-            #     # 動画配信のみかどうかチェック → できない
-            #     for o in ('dvd', 'rental'):
-            #         if self._get_otherslink(o, firmly=False):
-            #             break
-            #     else:
-            #         self._sm['note'].append('動画配信のみ')
-
             # Blu-ray版のときのDVD版の、またはその逆のチェック
             related = 'DVD' if self._bluray else 'Blu-ray'
             rltd_url = self._check_rltditem(related)
@@ -2782,10 +2728,13 @@ def _search_listpage(url, listname, listtype, pid):
         _verbose('url not found on ssw')
         return ()
 
+    # 表記揺れ解消
     if listtype == 'レーベル':
-        # 表記揺れ解消
-        if listname in _WIKITITLE:
-            listname = _WIKITITLE[listname]
+        if listname in _WIKITITLE_L:
+            listname = _WIKITITLE_L[listname]
+    elif listtype == 'シリーズ':
+        if listname in _WIKITITLE_S:
+            listname = _WIKITITLE_S[listname]
 
     found = False
     while not found:
@@ -3090,9 +3039,13 @@ def ssw_searchnext(el):
 def open_ssw(*pages):
     """wikiページをウェブブラウザで開く"""
     for p in filter(None, pages):
-        _webbrowser.open_new_tab(
-            'http://seesaawiki.jp/w/sougouwiki/e/add?pagename={}'.format(
-                quote(p)))
+        url = _up.urljoin('http://sougouwiki.com/d/', quote(p))
+        resp, he = open_url(url)
+        if resp.status == 200:
+            inner = he.find_class('inner')[0]
+            editurl = inner.xpath('.//a')[0].get('href')
+            if editurl:
+                _webbrowser.open_new_tab(editurl)
 
 
 _rep_diff = (('Courier', 'Sans'),
