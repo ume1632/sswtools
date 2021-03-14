@@ -89,12 +89,13 @@ _IGNORE_PERFORMERS = {'45067': 'KIプランニング',
                       '46656': '唾鬼'}
 
 # 表記揺れ対応をするレーベル
-_WIKITITLE_L = {'ティッシュ':             'TISSUE',
+_WIKITITLE_L = {'ティッシュ':            'TISSUE',
                'REAL（レアルワークス）': 'REAL',
                'SCOOP（スクープ）':      'スクープ',
                '頂 itadaki':             '頂_itadaki',
                'ヒプノシス':             '催眠研究所別館',
                'BALTAN Amazoness':       'amazoness',
+               'hoppin’':               'Hoppin\'',
 }
 
 # 表記揺れ対応をするシリーズ
@@ -193,7 +194,6 @@ _OMIT_SUSS_4H = {
     '40014': 'グローリークエスト',
     '40018': 'ルビー',
     '40025': 'ドリームチケット',
-    '40035': 'クリスタル映像',
     '40070': 'マルクス兄弟',
     '40074': 'ジャネス',
     '40077': 'AVS collector’s',
@@ -2894,6 +2894,7 @@ _sub_pid_indv = (
     (_re.compile(r'^21psd(\d+)'), r'psd+\1'),               # アウダースの一部
     (_re.compile(r'^\d*d1clymax00(\d+)'), r'd1clymax-\1'),  # D1グランプリ
     (_re.compile(r'^13dsvr0(\d+)'), r'3dsvr-\1'),           # SOD VRレーベル
+    (_re.compile(r'^h_094ktra(\d+)e'), r'ktra-\1e'),        # ケー・トライブの一部
     (_re.compile(r'^(?:[hn]_)?\d*([a-z]+)vr00(\d{3})'), r'\1vr-\2'), # VR作品
 )
 

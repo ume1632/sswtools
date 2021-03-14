@@ -886,7 +886,7 @@ def makeproditem(cid, service, sub_pid):
     pid = libssw.gen_pid(cid, sub_pid)[0]
     verbose('built cid: {}, pid: {}'.format(cid, pid))
     url = libssw.build_produrl(service, cid)
-    return url, libssw.Summary(url=url, title='__' + pid, cid=cid, pid=pid)
+    return url, libssw.Summary(url=url, title='', cid=cid, pid=pid)
 
 
 def from_sequence(keywords: tuple, service, sub_pid):
