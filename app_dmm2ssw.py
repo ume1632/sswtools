@@ -12,6 +12,8 @@ import libssw as _libssw
 import dmm2ssw as _dmm2ssw
 import jav2ssw as _jav2ssw
 
+from tkinter import ttk
+
 re_inbracket = re.compile(r'[(（]')
 
 g_link_label = ''
@@ -64,13 +66,20 @@ def button1_action():
         args = argparse.Namespace()
         args.table = WikiPage.get()
         args.dir_col = Director.get()
-        args.fastest = Fastest.get()
         args.label = inpLabel.get()
+
+        if cb1.current() == 1:
+            args.follow_rdr = False
+        elif cb1.current() == 2:
+            args.fastest = True
 
         # Fanza判定
         isFanza = ('dmm.co.jp' in props['url'])
 
         if isFanza:
+            if ('?' in props['url']):
+                urll = props['url'].split('?')
+                props['url'] = urll[0]
             b, status, data = _dmm2ssw.main(props, args)
         else:
             b, data = _jav2ssw.main(props, args)
@@ -131,8 +140,9 @@ def button2_action():
 
 # 一覧ページ編集画面を開く
 def button3_action():
-    _libssw.open_ssw(g_link_label)
-    _libssw.open_ssw(g_link_series)
+    #_libssw.open_ssw(g_link_label)
+    open_labelPage(g_link_label, g_pid)
+    #_libssw.open_ssw(g_link_series)
 
 # 一覧ページ用テキストをクリップボードにコピー
 def button4_action():
@@ -210,66 +220,73 @@ Director.set(False)
 chk1 = tk.Checkbutton(text = '監督欄を出力する', variable = Director)
 chk1.pack(padx = 10, side = tk.TOP, anchor = tk.NW)
 
-# Wiki検索をしない
-Fastest = tk.BooleanVar()
-Fastest.set(False)
+# Wiki内検索をしない
+f4 = tk.Frame(root)
+label4 = tk.Label(f4, text='Wiki内検索 :')
+label4.pack(padx = 10, side = tk.LEFT)
 
-chk2 = tk.Checkbutton(text = 'Wiki内検索を行わない(高速化)', variable = Fastest)
-chk2.pack(padx = 10, side = tk.TOP, anchor = tk.NW)
+SearchWiki = tk.StringVar()
+cbValues1 = ['Wiki内検索をする', 'リダイレクト確認をしない', 'Wiki内検索を行わない']
+
+cb1 = ttk.Combobox(f4, textvariable = SearchWiki, values = cbValues1)
+cb1.current(0)
+cb1.pack(side = tk.LEFT)
+
+f4.pack(padx = 10, pady = 10, side = tk.TOP, anchor = tk.NW)
 
 # 実行ボタン
-f4 = tk.Frame(root)
-button1 = tk.Button(f4, text='Export', width=30, command=button1_action)
+f5 = tk.Frame(root)
+button1 = tk.Button(f5, text='Export', width=30, command=button1_action)
 button1.pack(padx = 10, side = tk.LEFT)
 
 # 消去ボタン
-button2 = tk.Button(f4, text='Clear', width=15, command=button2_action)
+button2 = tk.Button(f5, text='Clear', width=15, command=button2_action)
 button2.pack(padx = 10, side = tk.LEFT)
-f4.pack(padx = 10, pady = 10, side = tk.TOP, anchor = tk.NW)
+f5.pack(padx = 10, pady = 10, side = tk.TOP, anchor = tk.NW)
 
-# Label 4
-label4 = tk.Label(text='一覧ページ用Wikiテキスト')
-label4.pack(padx = 20, pady = 5, side = tk.TOP, anchor = tk.NW)
+# Label 5
+label5 = tk.Label(text='一覧ページ用Wikiテキスト')
+label5.pack(padx = 20, pady = 5, side = tk.TOP, anchor = tk.NW)
 
 # 一覧ページ出力
 txtList = tk.Text(height=6, width=80)
 txtList.pack(padx = 10, side = tk.TOP, anchor = tk.NW)
 
 # Wiki編集ボタン 1
-f5 = tk.Frame(root)
-button3 = tk.Button(f5, text='一覧ページを編集', width=15, command=button3_action, state=tk.DISABLED)
+f6 = tk.Frame(root)
+button3 = tk.Button(f6, text='一覧ページを編集', width=15, command=button3_action, state=tk.DISABLED)
 button3.pack(padx = 10, side = tk.LEFT)
 
 # クリップボードへのコピーボタン 1
-button4 = tk.Button(f5, text='クリップボードにコピー', width=15, command=button4_action)
+button4 = tk.Button(f6, text='クリップボードにコピー', width=15, command=button4_action)
 button4.pack(padx = 5, side = tk.LEFT)
-f5.pack(padx = 10, pady = 5, side = tk.TOP, anchor = tk.NW)
+f6.pack(padx = 10, pady = 5, side = tk.TOP, anchor = tk.NW)
 
-# Label 5
-label5 = tk.Label(text='女優ページ用Wikiテキスト')
-label5.pack(padx = 20, pady = 5, side = tk.TOP, anchor = tk.NW)
+# Label 6
+label6 = tk.Label(text='女優ページ用Wikiテキスト')
+label6.pack(padx = 20, pady = 5, side = tk.TOP, anchor = tk.NW)
 
 # 女優ページ出力
 txtAct = tk.Text(height=6, width=80)
 txtAct.pack(padx = 10, side = tk.TOP, anchor = tk.NW)
 
 # Wiki編集ボタン 2
-f6 = tk.Frame(root)
-button5 = tk.Button(f6, text='女優ページを編集', width=15, command=button5_action, state=tk.DISABLED)
+f7 = tk.Frame(root)
+button5 = tk.Button(f7, text='女優ページを編集', width=15, command=button5_action, state=tk.DISABLED)
 button5.pack(padx = 10, side = tk.LEFT)
 
 # クリップボードへのコピーボタン 2
-button6 = tk.Button(f6, text='クリップボードにコピー', width=15, command=button6_action)
+button6 = tk.Button(f7, text='クリップボードにコピー', width=15, command=button6_action)
 button6.pack(padx = 5, side = tk.LEFT)
 
 # クリップボードへのコピーボタン 2
-button7 = tk.Button(f6, text='AT-Mania品番検索', width=20, command=button7_action, state=tk.DISABLED)
+button7 = tk.Button(f7, text='AT-Mania品番検索', width=20, command=button7_action, state=tk.DISABLED)
 button7.pack(padx = 5, side = tk.LEFT)
-f6.pack(padx = 10, pady = 5, side = tk.TOP, anchor = tk.NW)
+f7.pack(padx = 10, pady = 5, side = tk.TOP, anchor = tk.NW)
 
-# Label 6
-label6 = tk.Label(text='')
-label6.pack(padx = 20, pady = 5, side = tk.TOP, anchor = tk.NW)
+# Label 7
+label7 = tk.Label(text='')
+label7.pack(padx = 20, pady = 5, side = tk.TOP, anchor = tk.NW)
 
 root.mainloop()
 
