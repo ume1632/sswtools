@@ -53,12 +53,14 @@ def button1_action(event):
     if Director.get():
         argv.append('-d')
 
-    if Fastest.get():
-        argv.append('--fastest')
-
-    if cb.current() > 0:
+    if cb1.current() > 0:
         argv.append('--pages-last')
         argv.append(str(cb.current()))
+
+    if cb2.current() == 1:
+        argv.append('-f')
+    elif cb2.current() == 2:
+        argv.append('--fastest')
 
     if GetBest.get():
         argv.append('-mm')
@@ -193,13 +195,6 @@ Director.set(False)
 chk1 = tk.Checkbutton(f8, text = '監督欄を出力する', variable = Director)
 chk1.pack(side = tk.LEFT)
 
-# Wiki検索をしない
-Fastest = tk.BooleanVar()
-Fastest.set(False)
-
-chk2 = tk.Checkbutton(f8, text = 'Wiki内検索を行わない(高速化)', variable = Fastest)
-chk2.pack(padx = 10, side = tk.LEFT)
-
 # 総集編を除外しない
 GetBest = tk.BooleanVar()
 GetBest.set(False)
@@ -214,11 +209,22 @@ label8 = tk.Label(f9, text='検索範囲 :')
 label8.pack(side = tk.LEFT)
 
 SearchPage = tk.StringVar()
-cbValues = ['全件取得', '最新120件', '最新240件', '最新360件']
+cbValues1 = ['全件取得', '最新120件', '最新240件', '最新360件']
 
-cb = ttk.Combobox(f9, textvariable = SearchPage, values = cbValues)
-cb.current(0)
-cb.pack(side = tk.LEFT)
+cb1 = ttk.Combobox(f9, textvariable = SearchPage, values = cbValues1)
+cb1.current(0)
+cb1.pack(side = tk.LEFT)
+
+# Wiki内検索をしない
+label9 = tk.Label(f9, text='Wiki内検索 :')
+label9.pack(padx = 10, side = tk.LEFT)
+
+SearchWiki = tk.StringVar()
+cbValues2 = ['Wiki内検索をする', 'リダイレクト確認をしない', 'Wiki内検索を行わない']
+
+cb2 = ttk.Combobox(f9, textvariable = SearchWiki, values = cbValues2)
+cb2.current(0)
+cb2.pack(side = tk.LEFT)
 
 f9.pack(padx = 10, pady = 10, side = tk.TOP, anchor = tk.NW)
 
