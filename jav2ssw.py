@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import sys
 import re
 import httplib2
@@ -31,7 +33,8 @@ siteList = (('https://www.mgstage.com/', 'MGS'),
             ('https://www.g-area.org/', 'Perfect-G'),
             ('https://duga.jp/', 'DUGA'),
             ('https://dl.getchu.com/', 'Getchu'),
-            ('https://www.h4610.com/', 'エッチな4610')
+            ('https://www.h4610.com/', 'エッチな4610'),
+            ('https://www.girls-blue.com/', 'Girls Blue'),
 )
 
 
@@ -572,6 +575,31 @@ def h4610Parser(soup, summ):
             if item == '公開日':
                 summ['release'] = ddSet[i].string.strip()
 
+#----------------------------
+# Girl's Blue
+#----------------------------
+def girlsblueParser(soup, summ):
+    # No
+    sp_url = summ['url'].split('=')
+    summ['pid'] = sp_url[-1]
+
+    # サムネイル取得
+    summ['image_lg'] = 'https://www.girls-blue.com/free_photo/' + summ['pid'] + '/img1.jpg'
+
+    # 仮名取得
+    profile = soup.find('div', id="gallery_girl_profile").p.get_text(',').split(',')
+    print(profile)
+    summ['subtitle'] = profile[0].replace(' 名　前：', '').replace('　', '')
+
+    # サイズ取得
+    tall = profile[1].split('：')
+    size3 = profile[2].split('：')
+    summ['size'] = 'T' + tall[1] + ' B' + size3[1].replace('-', ' W', 1).replace('-', ' H', 1)
+
+    # レーベル設定
+    no = re.sub("\\D", "", summ['pid'])
+    summ['label'] = 'Girl\'s Blue(' + str((int(no) // 200 ) * 200 + 1) + '～)'
+
 ##############################
 # Parser
 ##############################
@@ -590,6 +618,7 @@ javParser = {
     'DUGA':                     dugaParser,
     'Getchu':                   getchuParser,
     'エッチな4610':             h4610Parser,
+    'Girls Blue':               girlsblueParser,
 }
 
 #----------------------------
@@ -687,9 +716,17 @@ def scuteFormat_t(summ):
 #----------------------------
 def mywifeFormat_t(summ):
     wtext = ''
-    alias = summ['subtitle'].split(' ', 1)
-    wtext += '|[[{0}>{1}]]|{2}~~{3}|'.format(summ['pid'], summ['url'], alias[-1], summ['size'])
-    wtext += '[[ ]]|&ref({0},305,180)|{1}||\n'.format(summ['image_sm'], summ['release'].replace('/', '-'))
+    tmp = summ['subtitle'].split(' ', 1)
+    alias = tmp[-1]
+
+    if '蒼い再会' in alias:
+        summ['note'].append('※蒼い再会~~No.以来')
+        alias = alias.replace(' 蒼い再会', '')
+
+    wtext += '|[[{0}>{1}]]|{2}~~{3}|'.format(summ['pid'], summ['url'], alias, summ['size'])
+    wtext += '[[ ]]|&ref({0},305,180)|{1}'.format(summ['image_sm'], summ['release'].replace('/', '-'))
+    wtext += '|{}|\n'.format('、'.join(summ['note']))
+    
     return wtext
 
 #----------------------------
@@ -748,6 +785,16 @@ def h4610Format_t(summ):
     wtext = '|[[{0}>{1}]]|{2}|[[]]|{3}||'.format(no.group(), summ['url'], summ['title'], summ['release'])
     return wtext
 
+#----------------------------
+# Girls Blue
+#----------------------------
+def girlsblueFormat_t(summ):
+    no = re.sub("\\D", "", summ['pid'])
+
+    wtext = '|[[{0}>{1}]]|#ref({2},80)|{3}~~{4}|[[ ]]|||'.format(no, summ['url'], summ['image_lg'], summ['subtitle'], summ['size'])
+
+    return wtext
+
 ##############################
 # Format Table
 ##############################
@@ -766,6 +813,7 @@ Format_t = {
     'DUGA':                     dugaFormat_t,
     'Getchu':                   getchuFormat_t,
     'エッチな4610':             h4610Format_t,
+    'Girls Blue':               girlsblueFormat_t,
 }
 
 #----------------------------
@@ -1129,6 +1177,28 @@ def h4610Format_a(summ):
 
     return wtext
 
+#----------------------------
+# Girls Blue
+#----------------------------
+def girlsblueFormat_a(summ):
+    wtext = ''
+
+    # 配信日
+    date = '//' + summ['release']
+    wtext += date
+
+    # タイトルとURL
+    wtext += "\n[[Girl's Blue {0} {1} {2}>{3}]]".format(summ['pid'], summ['subtitle'], summ['size'], summ['url'])
+
+    # レーベルリンク
+    if summ['label'] != '':
+        wtext += "　[[(レーベル一覧)>{0}]]".format(summ['label'])
+
+    # 画像URL
+    wtext += "\n&ref({0},147)".format(summ['image_lg'])
+
+    return wtext
+
 ##############################
 # Format Actress
 ##############################
@@ -1147,6 +1217,7 @@ Format_a = {
     'DUGA':                     dugaFormat_a,
     'Getchu':                   getchuFormat_a,
     'エッチな4610':             h4610Format_a,
+    'Girls Blue':               girlsblueFormat_a,
 }
 
 def main(props=_libssw.Summary(), p_args = argparse.Namespace):
