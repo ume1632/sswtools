@@ -55,7 +55,7 @@ def button1_action(event):
 
     if cb1.current() > 0:
         argv.append('--pages-last')
-        argv.append(str(cb.current()))
+        argv.append(str(cb1.current()))
 
     if cb2.current() == 1:
         argv.append('-f')
