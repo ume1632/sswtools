@@ -967,7 +967,7 @@ def build_header_actress(actids: tuple):
     def _build(aids):
         """女優名の整形とIDのペアを返す"""
         for aid in aids:
-            resp, he = libssw.open_url(ACTINFOPAGE.format(aid), set_cookie='age_check_done=1')
+            resp, he = libssw.open_url(ACTINFOPAGE.format(aid), 'utf-8', set_cookie='age_check_done=1')
             yield '／'.join(_getnames(he)), ACTLISTPAGE.format(aid)
 
     header = fmtheader(_build(actids))
