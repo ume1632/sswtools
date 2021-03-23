@@ -47,7 +47,7 @@ def open_wiki(*pages):
                 _webbrowser.open_new_tab(editurl)
         else:
             message = p + ' : ページが見つかりませんでした'
-            label6.config(text=message)
+            label7.config(text=message)
 
 def button1_action():
     props=_libssw.Summary()
@@ -67,6 +67,7 @@ def button1_action():
         args.table = WikiPage.get()
         args.dir_col = Director.get()
         args.label = inpLabel.get()
+        args.cid_l = ''
 
         if cb1.current() == 1:
             args.follow_rdr = False
@@ -110,7 +111,7 @@ def button1_action():
                     # 編集ボタン有効化
                     button5['state'] = tk.NORMAL
 
-            label6.config(text='取得完了')
+            label7.config(text='取得完了')
 
             if 'dmm.co.jp/mono/dvd/' in props['url']:
                 # DVD商品ならAt-mania検索ボタン有効化
@@ -121,7 +122,7 @@ def button1_action():
             g_link_series = ''
             g_actress = []
             g_pid = ''
-            label6.config(text='取得失敗')
+            label7.config(text='取得失敗')
 
 # クリア
 def button2_action():
@@ -132,7 +133,7 @@ def button2_action():
     # テキストクリア
     txtList.delete('1.0', 'end')
     txtAct.delete('1.0', 'end')
-    label6.config(text='')
+    label7.config(text='')
     # ボタン無効化
     button3['state'] = tk.DISABLED
     button5['state'] = tk.DISABLED
@@ -140,9 +141,8 @@ def button2_action():
 
 # 一覧ページ編集画面を開く
 def button3_action():
-    #_libssw.open_ssw(g_link_label)
-    open_labelPage(g_link_label, g_pid)
-    #_libssw.open_ssw(g_link_series)
+    _libssw.open_ssw(g_link_label)
+    _libssw.open_ssw(g_link_series)
 
 # 一覧ページ用テキストをクリップボードにコピー
 def button4_action():
@@ -169,7 +169,7 @@ def button7_action():
 #-----------------------------------------------
 root = tk.Tk()
 root.title(u"素人系総合Wiki 編集ツール Dmm2Ssw")
-root.geometry("640x540")
+root.geometry("640x560")
 
 # Label 1
 f1 = tk.Frame(root)
