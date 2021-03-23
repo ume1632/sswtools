@@ -37,19 +37,23 @@ siteList = (('https://www.mgstage.com/', 'MGS'),
             ('https://www.girls-blue.com/', 'Girls Blue'),
 )
 
-
-vThumbnail = {  'ラグジュTV',
-                'ドキュメンTV',
-                '投稿マーケット素人イッてQ',
-                'プレステージプレミアム(PRESTIGE PREMIUM)',
-                'ARA',
-                '黒蜜',
-                'MOON FORCE',
-                'KANBi',
-                '#きゅんです',
-}
-
-
+# MGS独占メーカー
+OnlyMGS = ( 'ナンパTV',
+            'シロウトTV',
+            'プレステージプレミアム(PRESTIGE PREMIUM)',
+            'ラグジュTV',
+            'NTR.net',
+            'なまなま.net',
+            'Jackson',
+            'SUKEKIYO',
+            'ARA',
+            'DIEGO',
+            'GOOD-BYE-CHERRYBOY',
+            'HHH',
+            '変態サムライ',
+            'ドキカクch',
+            'セイキョウイク',
+)
 
 # コマンドライン引数の解釈
 def _get_args(argv, p_args):
@@ -123,6 +127,9 @@ def mgsProductParser(soup, summ):
     # タイトル・リリース日取得
     table = soup.find_all('tr')
 
+    isDvd = False
+    tmpActress = ''
+
     for tr in table:
         if tr.find('th'):
             th = tr.find('th').string
@@ -131,39 +138,51 @@ def mgsProductParser(soup, summ):
                 summ['pid'] = summ['title']
             elif th == '配信開始日：':
                 summ['release'] = tr.find('td').string
+            elif th == '商品発売日：':
+                tmpRelease = tr.find('td').string
+                if (tmpRelease != 'DVD未発売'):
+                    isDvd = True
             elif th == '出演：':
-                summ['actress'].append(tr.find('td').text.strip())
+                tmpActress = tr.find('td').text.strip()
             elif th == 'メーカー：':
-                summ['label'] = tr.find('td').find('a').string.strip()
+                if tr.find('td').find('a'):
+                    summ['maker'] = tr.find('td').find('a').string.strip()
+            elif th == 'レーベル：':
+                if tr.find('td').find('a'):
+                    summ['label'] = tr.find('td').find('a').string.strip()
             elif th == 'シリーズ：':
                 if tr.find('td').find('a'):
                     summ['series'] = tr.find('td').find('a').string.strip()
             elif th == '収録時間：':
                 summ['time'] = tr.find('td').string.replace('min', '分')
 
-    # 出演情報を改行付きでタイトルに含める
-    if summ['actress']:
-        summ['subtitle'] += "~~{0}".format(summ['actress'][0])
+    if isDvd:
+        summ['media'] = 'DVD動画'
+        summ['release'] = tmpRelease
+        summ['actress'] = tmpActress.split()
+    else:
+        summ['media'] = '配信専用動画'
+        if tmpActress:
+            summ['actress'].append(tmpActress)
+            # 出演情報を改行付きでタイトルに含める
+            summ['subtitle'] += "~~{0}".format(summ['actress'][0])
 
     # イメージ設定
-    if summ['label'] == 'ナンパTV' or summ['label'] == 'シロウトTV':
+    if summ['maker'] == 'ナンパTV' or summ['maker'] == 'シロウトTV':
         summ['image_sm'] = img_src.replace('pb_p_', 'pb_t1_')
         summ['image_lg'] = img_src.replace('pb_p_', 'pb_e_')
-    elif summ['label'] in vThumbnail:
+    else :
         summ['image_sm'] = "&ref({0},147)".format(img_src)
-        summ['image_lg'] = img_src.replace('pf_o1_', 'pb_e_')
-    else:
-        summ['image_sm'] = img_src
         summ['image_lg'] = img_src.replace('pf_o1_', 'pb_e_')
 
     # Wikiに合わせてレーベル名変更
-    if summ['label'] == 'ナンパTV':
+    if summ['maker'] == 'ナンパTV':
         no = int(summ['pid'].replace('200GANA-', ''))
         if no < 201:
             summ['label'] = 'ナンパＴＶ'
         else:
             summ['label'] = 'ナンパＴＶ ' + str((no // 200 ) + 1)
-    elif summ['label'] == 'プレステージプレミアム(PRESTIGE PREMIUM)':
+    elif summ['maker'] == 'プレステージプレミアム(PRESTIGE PREMIUM)':
         titles = summ['title'].split('-')
         if titles[0] == '300MAAN':
             summ['label'] = 'MAAN-san'
@@ -196,6 +215,7 @@ def mgsMonthlyParser(soup, summ):
     detail = common_detail_cover.find('ul', class_='detail_txt').find_all('li')
     pid = detail[0].string.split('：')
     summ['pid'] = pid[2]
+    summ['title'] = summ['pid']
     summ['series'] = detail[1].find('a').string
     summ['actress'] = detail[2].find('a').string
 
@@ -206,6 +226,8 @@ def mgsMonthlyParser(soup, summ):
     # イメージ設定
     summ['image_sm'] = img_src.replace('pb_p_', 'pb_t1_')
     summ['image_lg'] = img_src.replace('pb_p_', 'pb_e_')
+
+    summ['media'] = '月額見放題'
 
 #----------------------------
 # HEYZO
@@ -629,11 +651,19 @@ def mgsFormat_t(summ):
     wtext += '|[[{0}>{1}]]|[[{2}>{3}]]|'.format(summ['title'], summ['url'], summ['image_sm'], summ['image_lg'])
 
     # 各シリーズ一覧ページの仕様に合わせこむ
-    if summ['label'] == 'シロウトTV' or summ['label'] == 'ラグジュTV':
+    if summ['maker'] == 'シロウトTV' or summ['maker'] == 'ラグジュTV':
         wtext += '|{0}|[[ ]]|{1}|{2}||\n'.format(summ['subtitle'], summ['time'], summ['release'].replace('/', '-'))
     elif summ['series'] == 'マジ軟派、初撮。':
         subtext = re.sub(r'マジ軟派、初撮。 ([0-9]*) ', r'vol.\1~~', summ['subtitle'])
         wtext += '{0}|[[ ]]|{1}||\n'.format(subtext, summ['release'].replace('/', '-').replace('.', '-'))
+    elif summ['media'] == 'DVD動画':
+        wtext += '{0}|'.format(summ['subtitle'])
+        for act in summ['actress']:
+            if act == summ['actress'][0]:
+                wtext += '[[{0}]]'.format(act)
+            else:
+                wtext += '／[[{0}]]'.format(act)
+        wtext += '|{0}||\n'.format(summ['release'].replace('/', '-').replace('.', '-'))
     else:
         wtext += '{0}|[[ ]]|{1}||\n'.format(summ['subtitle'], summ['release'].replace('/', '-').replace('.', '-'))
 
@@ -835,8 +865,10 @@ def mgsFormat_a(summ):
         wtext += ' '
         wtext += summ['pid']
 
-    # サイト名
-    wtext += '\n[[MGS '
+    wtext += '\n[['
+
+    if summ['media'] != 'DVD動画':
+        wtext += 'MGS '
 
     # 作品番号
     if summ['cid']:
@@ -845,9 +877,13 @@ def mgsFormat_a(summ):
     # タイトル
     wtext += summ['subtitle'].replace('~~', '　')
 
-    # レーベル（※慣例的に一部レーベルのみつけている）
-    if summ['label'] == '投稿マーケット素人イッてQ' or summ['label'] == 'MOON FORCE':
-        wtext += "（{0}）".format(summ['label'])
+    # MGS独占動画か判定
+    isOnlyMGS = (summ['media'] == '月額見放題' or (summ['maker'] in OnlyMGS))
+
+    # メーカー、レーベル（※MGS独占動画は慣例的にメーカー・メーベルをつけない）
+    if not isOnlyMGS:
+        wtext += '（{0[maker]}／{0[label]}）'.format(summ) if summ['label'] and (summ['maker'] != summ['label']) \
+            else '（{0[maker]}）'.format(summ)
 
     # URL
     wtext += '>'
@@ -855,7 +891,12 @@ def mgsFormat_a(summ):
     wtext += "]]"
 
     # レーベルリンク
-    if summ['label'] != '':
+    if summ['maker'] != '' and summ['media'] != 'DVD動画' and summ['pid'] != '' and summ['maker'] != 'ナンパTV' and summ['maker'] != 'プレステージプレミアム(PRESTIGE PREMIUM)':
+        actuall = _libssw.check_actuallpage(summ['url'], summ['maker'], 'レーベル', summ['pid'])
+        if actuall:
+            wtext += "　[[(レーベル一覧)>{0}]]".format(actuall)
+
+    if summ['label'] != '' and summ['label'] != summ['maker']:
         if summ['pid'] != '':
             actuall = _libssw.check_actuallpage(summ['url'], summ['label'], 'レーベル', summ['pid'])
             if actuall:
@@ -864,7 +905,7 @@ def mgsFormat_a(summ):
             wtext += "　[[(レーベル一覧)>{0}]]".format(summ['label'])
 
     # シリーズリンク
-    if summ['series'] != '' and summ['label'] != summ['series']:
+    if summ['series'] != '' and summ['label'] != summ['series'] and summ['maker'] != summ['series']:
         actuall = _libssw.check_actuallpage(summ['url'], summ['series'], 'シリーズ', summ['pid'])
         if actuall:
             wtext += "　[[(シリーズ一覧)>{0}]]".format(actuall)
