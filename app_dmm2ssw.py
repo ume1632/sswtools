@@ -164,12 +164,27 @@ def button7_action():
     searchUrl = "https://www.google.com/search?hl=ja&q={}+site%3Aat-mania.com%2Fal%2F".format(g_pid)
     _webbrowser.open_new_tab(searchUrl)
 
+# URL入力
+def enter_url(event):
+    button1_action()
+
+# 右クリックメニュー表示
+def show_popup(event):
+    menuPop.post(event.x_root, event.y_root)
+
+# クリップボード貼り付け
+def paste_url():
+    txtUrl.insert(tk.END, root.clipboard_get())
+
 #-----------------------------------------------
 # Main
 #-----------------------------------------------
 root = tk.Tk()
-root.title(u"素人系総合Wiki 編集ツール Dmm2Ssw")
-root.geometry("640x560")
+root.title(u'素人系総合Wiki 編集ツール Dmm2Ssw')
+root.geometry('640x560')
+
+menuPop = tk.Menu(root, tearoff=False)
+menuPop.add_cascade(label='貼り付け', command=paste_url)
 
 # Label 1
 f1 = tk.Frame(root)
@@ -179,6 +194,8 @@ label1.pack(padx = 10, side = tk.LEFT)
 # URL入力ボックス
 txtUrl = tk.Entry(f1, width=80)
 txtUrl.pack(padx = 10, side = tk.LEFT)
+txtUrl.bind('<Return>', enter_url)
+txtUrl.bind('<Button-3>',show_popup)
 f1.pack(padx = 10, pady = 5, side = tk.TOP, anchor = tk.NW)
 
 # Label 2
