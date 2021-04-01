@@ -96,10 +96,14 @@ _WIKITITLE_L = {'ティッシュ':            'TISSUE',
                'ヒプノシス':             '催眠研究所別館',
                'BALTAN Amazoness':       'amazoness',
                'hoppin’':               'Hoppin\'',
+               'アクアモール':           'HERO（アクアモール）',
+               'KSB企画/エマニエル':     'KSB企画／エマニエル',
+               'e-kiss':                 'e-KiSSレーベル',
 }
 
 # 表記揺れ対応をするシリーズ
 _WIKITITLE_S = {'我慢できれば生中出しSEX！':    '我慢できれば生★中出しSEX！',
+                'ママシ●タ実話':               'ママショタ実話',
 }
 
 # 送信防止措置依頼されている女優
@@ -1590,14 +1594,18 @@ class DMMParser:
             self._sm['media'] = rm_nlcode(getnext_text(prop))
             _verbose('media: ', self._sm['media'])
 
-        elif tag in ('発売日：', '貸出開始日：', '配信開始日：'):
+        elif tag in ('発売日：', '貸出開始日：', '配信開始日：', '商品発売日：'):
 
             data = getnext_text(prop)
 
             if self._start_date and data.replace('/', '') < self._start_date:
                 raise OmitTitleException('release', 'date')
 
-            self._sm['release'] = rm_nlcode(data).replace(' 10:00～', '')
+            rl = rm_nlcode(data).replace(' 10:00～', '')
+
+            if rl != '----':
+                self._sm['release'] = rl
+
             _verbose('release: ', self._sm['release'])
 
         elif tag == '収録時間：':
@@ -2728,14 +2736,6 @@ def _search_listpage(url, listname, listtype, pid):
         _verbose('url not found on ssw')
         return ()
 
-    # 表記揺れ解消
-    if listtype == 'レーベル':
-        if listname in _WIKITITLE_L:
-            listname = _WIKITITLE_L[listname]
-    elif listtype == 'シリーズ':
-        if listname in _WIKITITLE_S:
-            listname = _WIKITITLE_S[listname]
-
     found = False
     while not found:
         keywords = he.xpath('//h3[@class="keyword"]/a/text()')
@@ -2782,6 +2782,14 @@ def check_actuallpage(url, lpage, ltype, pid):
     #     # キャッシュされてたらそれを返す
     #     _verbose('list page found on REDIRECTS: ', _REDIRECTS[url])
     #     return lpage if _REDIRECTS[url] == '__NON__' else _REDIRECTS[url]
+
+    # 表記揺れ解消
+    if ltype == 'レーベル':
+        if lpage in _WIKITITLE_L:
+            lpage = _WIKITITLE_L[lpage]
+    elif ltype == 'シリーズ':
+        if lpage in _WIKITITLE_S:
+            lpage = _WIKITITLE_S[lpage]
 
     pages = tuple(_search_listpage(url, lpage, ltype, pid))
     _verbose('list page found: ', pages)

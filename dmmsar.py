@@ -1111,7 +1111,7 @@ class BuildPage:
             # ブラウザで開く
             libssw.open_ssw(*self._page_names)
 
-    def __call__(self, n_i_s):
+    def __call__(self, n_i_s, is_table):
 
         self._titles_dmm = []
 
@@ -1125,7 +1125,7 @@ class BuildPage:
 
             remainder = self._row % self._split
 
-            if self._t_hdr and remainder and not self._row % 10:
+            if self._t_hdr and remainder and not self._row % 10 and is_table:
                 # 10件ごとの表ヘッダの出力
                 yield self._t_hdr.format('NO')
                 verbose('Header: ', self._no)
@@ -1156,7 +1156,7 @@ def finalize(build_page, row, make, n_i_s, nis_series, outfile):
         build_page.start(row, is_table)
 
         while not build_page.done:
-            per_page = '\n'.join(build_page(n_i_s))
+            per_page = '\n'.join(build_page(n_i_s, is_table))
             yield per_page
 
             if outfile:

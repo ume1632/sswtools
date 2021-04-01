@@ -55,6 +55,19 @@ OnlyMGS = ( 'ナンパTV',
             'セイキョウイク',
 )
 
+# プレステージレーベル
+PrestigeLabel = ( 'DOC',
+                  'KANBi',
+                  'SUKESUKE',
+                  'ゲッツ!!',
+                  '最強属性',
+                  'ONE MORE',
+                  'マジック',
+                  'フルセイル',
+                  '藪スタイル',
+                  'TOY GIRL',
+)
+
 # コマンドライン引数の解釈
 def _get_args(argv, p_args):
     argparser = argparse.ArgumentParser(
@@ -159,13 +172,14 @@ def mgsProductParser(soup, summ):
     if isDvd:
         summ['media'] = 'DVD動画'
         summ['release'] = tmpRelease
-        summ['actress'] = tmpActress.split()
+        # 特典情報は削除する
+        summ['subtitle'] = re.sub('【MGSだけの.*分】', '', summ['subtitle'])
+        summ['subtitle'] = re.sub('【フルバージョン】', '', summ['subtitle'])
     else:
         summ['media'] = '配信専用動画'
-        if tmpActress:
-            summ['actress'].append(tmpActress)
-            # 出演情報を改行付きでタイトルに含める
-            summ['subtitle'] += "~~{0}".format(summ['actress'][0])
+
+    if tmpActress:
+        summ['actress'] = [(p.strip(), '', '') for p in tmpActress.split()]
 
     # イメージ設定
     if summ['maker'] == 'ナンパTV' or summ['maker'] == 'シロウトTV':
@@ -176,21 +190,26 @@ def mgsProductParser(soup, summ):
         summ['image_lg'] = img_src.replace('pf_o1_', 'pb_e_')
 
     # Wikiに合わせてレーベル名変更
-    if summ['maker'] == 'ナンパTV':
-        no = int(summ['pid'].replace('200GANA-', ''))
-        if no < 201:
-            summ['label'] = 'ナンパＴＶ'
-        else:
-            summ['label'] = 'ナンパＴＶ ' + str((no // 200 ) + 1)
-    elif summ['maker'] == 'プレステージプレミアム(PRESTIGE PREMIUM)':
-        titles = summ['title'].split('-')
-        if titles[0] == '300MAAN':
-            summ['label'] = 'MAAN-san'
-        else:
-            summ['label'] = titles[0] + 'その他'
-        no = int(titles[1])
-        if no > 200:
-            summ['label'] = summ['label'] + ' ' + str((no // 200 ) + 1)
+    if isDvd:
+        if summ['maker'] in PrestigeLabel:
+            summ['label'] = summ['maker']
+            summ['maker'] = 'プレステージ'
+    else:
+        if summ['maker'] == 'ナンパTV':
+            no = int(summ['pid'].replace('200GANA-', ''))
+            if no < 201:
+                summ['label'] = 'ナンパＴＶ'
+            else:
+                summ['label'] = 'ナンパＴＶ ' + str((no // 200 ) + 1)
+        elif summ['maker'] == 'プレステージプレミアム(PRESTIGE PREMIUM)':
+            titles = summ['title'].split('-')
+            if titles[0] == '300MAAN':
+                summ['label'] = 'MAAN-san'
+            else:
+                summ['label'] = titles[0] + 'その他'
+            no = int(titles[1])
+            if no > 200:
+                summ['label'] = summ['label'] + ' ' + str((no // 200 ) + 1)
 
 #----------------------------
 # MGS動画(月額)
@@ -660,9 +679,9 @@ def mgsFormat_t(summ):
         wtext += '{0}|'.format(summ['subtitle'])
         for act in summ['actress']:
             if act == summ['actress'][0]:
-                wtext += '[[{0}]]'.format(act)
+                wtext += '[[{0}]]'.format(act[0])
             else:
-                wtext += '／[[{0}]]'.format(act)
+                wtext += '／[[{0}]]'.format(act[0])
         wtext += '|{0}||\n'.format(summ['release'].replace('/', '-').replace('.', '-'))
     else:
         wtext += '{0}|[[ ]]|{1}||\n'.format(summ['subtitle'], summ['release'].replace('/', '-').replace('.', '-'))

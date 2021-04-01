@@ -37,6 +37,7 @@ def button1_action(event):
         argv.append('-tt')
 
     if CidPrefix and CidSTart:
+        CidPrefix = CidPrefix.strip()
         argv.append('--cid')
         if CidEnd:
             argv.append(CidPrefix + '{}')
