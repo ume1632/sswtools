@@ -2903,7 +2903,8 @@ _sub_pid_indv = (
     (_re.compile(r'^\d*d1clymax00(\d+)'), r'd1clymax-\1'),  # D1グランプリ
     (_re.compile(r'^13dsvr0(\d+)'), r'3dsvr-\1'),           # SOD VRレーベル
     (_re.compile(r'^h_094ktra(\d+)e'), r'ktra-\1e'),        # ケー・トライブの一部
-    (_re.compile(r'^(?:[hn]_)?\d*([a-z]+)vr00(\d{3})'), r'\1vr-\2'), # VR作品
+    (_re.compile(r'^n_709m([a-z])r([a-z]{2})(\d{3})'), r'm\1r-\2\3'),   # スパイスビジュアルの一部
+    (_re.compile(r'^(?:[hn]_)?\d*([a-z]+)vr00(\d{3})'), r'\1vr-\2'),    # VR作品
 )
 
 
