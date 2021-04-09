@@ -960,7 +960,7 @@ def build_header_actress(actids: tuple):
         nonlocal current
 
         for name, yomi in zip_longest(*libssw.get_actname(he)):
-            yield name if yomi is None else '{}（{}）'.format(name, yomi)
+            yield name if yomi is None else '{}（{}）'.format(name.strip(), yomi)
 
         current = libssw.get_actname.current
 
