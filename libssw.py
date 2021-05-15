@@ -950,7 +950,11 @@ def load_cache(stem, default=None, expire=7200):
         return default
     else:
         with pkfile.open('rb') as f:
-            cache = _pickle.load(f)
+            try:
+                cache = _pickle.load(f)
+            except:
+                return default
+
         return cache
 
 _REDIRECTS = load_cache(_RDRDFILE, default=_REDIRECTS)
