@@ -1816,7 +1816,7 @@ def main(props=_libssw.Summary(), p_args = argparse.Namespace):
                                 summ('maker', 'maker_id'),
                                 summ('label', 'label_id'),
                                 summ('series', 'series_id'),
-                                _list_pfmrs(summ['actress']),
+                                summ['actress'],
                                 summ['link_label'],
                                 summ['link_series'],
                                 wktxt_a,
