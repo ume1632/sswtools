@@ -909,7 +909,8 @@ def mgsFormat_t(summ):
         if summ['maker'] == 'プレステージプレミアム(PRESTIGE PREMIUM)':
             wtext += '{0}~~{1}|[[ ]]|{2}|{3}|\n'.format(summ['title'], summ['subtitle'], date, summ['series'])
         else:
-            wtext += '{0}|[[ ]]|{1}||\n'.format(summ['subtitle'], date)
+            wtext += '{0}~~{1}|[[ ]]|{2}||\n'.format(summ['title'], summ['subtitle'], date) if summ['subtitle'] \
+            else '{0}|[[ ]]|{1}||\n'.format(summ['title'], date)
 
     return wtext
 
