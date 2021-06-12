@@ -99,6 +99,9 @@ _WIKITITLE_L = {'ティッシュ':            'TISSUE',
                'アクアモール':           'HERO（アクアモール）',
                'KSB企画/エマニエル':     'KSB企画／エマニエル',
                'e-kiss':                 'e-KiSSレーベル',
+               'pistil':                 'PISTレーベル',
+               'アテナ映像':             'ATHENA',
+               'ヒプノシスRASH':         '催眠RASH',
 }
 
 # 表記揺れ対応をするシリーズ
@@ -120,13 +123,13 @@ HIDE_NAMES_V = HIDE_NAMES.values()
 _GENRE_BD = '6104'  # Blu-rayのジャンルID
 
 # 除外キーワード
-_OMITWORDS = {'総集編':       '総集編',
-              'BEST':         '総集編',
-              'Best':         '総集編',
-              'ベスト':       '総集編',
-              'COMPLETE':     '総集編',
-              'コンプリート': '総集編',
-              '総編版':       '総集編',
+_OMITWORDS = {'総集編':       '総集編作品',
+              'BEST':         '総集編作品',
+              'Best':         '総集編作品',
+              'ベスト':       '総集編作品',
+              'COMPLETE':     '総集編作品',
+              'コンプリート': '総集編作品',
+              '総編版':       '総集編作品',
 
               'アウトレット': 'アウトレット',
               '廉価版':       'アウトレット',
@@ -155,13 +158,13 @@ _OMNI_PATTERN_WORDS = {
     _re.compile(r'(?:全|\d+)タイトル'): '総集編'}
 
 
-_OMITTYPE = ('イメージビデオ', '総集編', 'アウトレット', '復刻盤', '限定盤', 'UMD')
+_OMITTYPE = ('イメージビデオ', '総集編作品', 'アウトレット', '復刻盤', '限定盤', 'UMD')
 
 # 除外対象ジャンル
 _OMITGENRE = {'6014': 'イメージビデオ',
-              '6003': '総集編',       # ベスト・総集編
-              '6608': '総集編',       # 女優ベスト・総集編
-              '7407': '総集編',       # ベスト・総集編
+              '6003': '総集編作品',       # ベスト・総集編
+              '6608': '総集編作品',       # 女優ベスト・総集編
+              '7407': '総集編作品',       # ベスト・総集編
               '6147': 'アウトレット',
               '6175': 'アウトレット',  # '激安アウトレット'
               '6555': '復刻',
@@ -1244,7 +1247,7 @@ _re_oroshi = _re.compile(r'撮り(おろ|下ろ|卸)し')
 
 def _isnot_torioroshi(genre, title):
     """総集編でタイトルに「撮りおろし」となければ真を返す"""
-    return genre == '総集編' and not _re_oroshi.search(title)
+    return genre == '総集編作品' and not _re_oroshi.search(title)
 
 
 _re_omnivals = (
@@ -1303,21 +1306,21 @@ def check_omit(title, cid, omit_suss_4h=None, no_omits=set()):
         return key, word
 
     # 隠れ総集編チェック
-    if '総集編' not in no_omits and _isnot_torioroshi('総集編', title):
+    if '総集編作品' not in no_omits and _isnot_torioroshi('総集編作品', title):
         # 隠れ総集編チェック(タイトル内の数値から)
         omnivals = _check_omnivals(title)
         if omnivals:
-            return '総集編', omnivals
+            return '総集編作品', omnivals
 
         # 隠れ総集編チェック(cidから)
         if _check_omitprfx(cid):
-            return '総集編', cid
+            return '総集編作品', cid
 
         # 総集編容疑メーカー
         if omit_suss_4h:
             hh, mmm = _is_omnirookie(cid, title)
             if hh or mmm:
-                return '総集編', omit_suss_4h + '(4時間以上)'
+                return '総集編作品', omit_suss_4h + '(4時間以上)'
 
     # 隠れIVチェック
     if 'イメージビデオ' not in no_omits:
@@ -1636,7 +1639,7 @@ class DMMParser:
 
             # 総集編メーカーチェック
             if mkid in _OMIT_MAKER:
-                self._mark_omitted('総集編', _OMIT_MAKER[mkid])
+                self._mark_omitted('総集編作品', _OMIT_MAKER[mkid])
 
             # 総集編容疑メーカー
             if mkid in _OMIT_SUSS_4H:
@@ -1661,7 +1664,7 @@ class DMMParser:
 
             # 隠れ総集編レーベルチェック
             if lbid in _OMIT_LABEL:
-                self._mark_omitted('総集編', _OMIT_LABEL[lbid])
+                self._mark_omitted('総集編作品', _OMIT_LABEL[lbid])
 
             self._sm['label_id'] = lbid
             _verbose('label: ', self._sm['label'])
@@ -1682,7 +1685,7 @@ class DMMParser:
 
             # 隠れ総集編シリーズチェック
             if srid in _OMIT_SERIES:
-                self._mark_omitted('総集編', _OMIT_SERIES[srid])
+                self._mark_omitted('総集編作品', _OMIT_SERIES[srid])
 
             if srid in _IGNORE_SERIES:
                 # シリーズとして扱わない処理
@@ -1813,7 +1816,7 @@ class DMMParser:
         if len_el:
             # if self._omit_suss and len_el > 3:
             #     # ROOKIE出演者数チェック
-            #     self._mark_omitted('総集編', self._omit_suss)
+            #     self._mark_omitted('総集編作品', self._omit_suss)
 
             if el[-1].get('href') == '#':
                 # 「▼すべて表示する」があったときのその先の解析
@@ -1991,7 +1994,7 @@ class DMMParser:
 
         if self._omit_suss_4h and cvt2int(self._sm['time']) > 200:
             # 総集編容疑メーカーで4時間以上
-            self._mark_omitted('総集編', self._omit_suss_4h + '(4時間以上)')
+            self._mark_omitted('総集編作品', self._omit_suss_4h + '(4時間以上)')
 
         if service == 'ama':
             # 素人動画の時のタイトル/副題の再作成
@@ -2517,9 +2520,11 @@ class _FromHtml:
             userarea = he.find_class('user-area')[0]
 
             for tbl in userarea.iterfind('.//table'):
-
-                Cols = gen_ntfcols(
-                    'Cols', _makeheader(tbl.find('.//tr[th]').iterfind('th')))
+                try:
+                    Cols = gen_ntfcols(
+                        'Cols', _makeheader(tbl.find('.//tr[th]').iterfind('th')))
+                except:
+                    continue
 
                 for tr in tbl.iterfind('.//tr[td]'):
                     self._number = 0
@@ -2533,6 +2538,8 @@ class _FromHtml:
 
                     anchor = md.NO.find('a')
                     if anchor is not None:
+                        if anchor.text is None:
+                            continue
                         pid = anchor.text.strip()
                         url = anchor.get('href')
                         if not url.endswith('/'):
@@ -2549,6 +2556,8 @@ class _FromHtml:
                         else:
                             cid = rm_hyphen(pid).lower()
                             url = build_produrl(service, cid)
+
+                    url = url.replace('http:', 'https:')
 
                     # タイトルに改行があればスペースへ置き換え
                     if 'TITLE' in md._fields:
