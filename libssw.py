@@ -2985,13 +2985,15 @@ class _GetActName:
         named = self._re_actname1.split(data)
 
         if len(named) == 1:
-            # 分割されなかったら名前は1つのみなのでそのまま名前とよみに分割
+            # 分割されなかったら名前は1つのみ
             named = re_inbracket.split(data)
+
+        yomis = elems.find_class('c-tx-actressName__ruby')[0].text.strip()
 
         # 名前を分割
         name = self._re_actname2.split(named[0])
         # よみを分割
-        yomi = self._re_actname2.split(named[1].rstrip('）)'))
+        yomi = self._re_actname2.split(yomis.rstrip('）)'))
 
         # 現在の名前の格納
         self.current = name[0]
