@@ -8,7 +8,6 @@ import urllib.request
 import argparse
 import libssw as _libssw
 import dmm2ssw as _dmm2ssw
-import chardet
 from collections import namedtuple as _namedtuple
 
 re_inbracket = re.compile(r'[(（]')
@@ -41,6 +40,16 @@ siteList = (('https://www.mgstage.com/', 'MGS'),
             ('https://gold2.h-paradise.net/', '人妻パラダイス'),
             ('https://faleno.jp/', 'FALENO'),
             ('https://www.akibacom.jp/', 'AKIBACOM'),
+)
+
+# EUC-JPでデコードするサイト
+charsetEucJp = ( 'カリビアンコム',
+                 'カリビアンコムプレミアム',
+                 'パコパコママ',
+                 'Getchu',
+                 'エッチな4610',
+                 'RSA',
+                 '人妻パラダイス'
 )
 
 # MGS独占メーカー
@@ -1780,8 +1789,12 @@ def main(props=_libssw.Summary(), p_args = argparse.Namespace):
         else:
             response, content = h.request(reqUrl)
 
-        guess = chardet.detect(content)
-        html = content.decode(guess['encoding'], 'ignore')
+        if site in charsetEucJp:
+            html = content.decode('euc-jp', 'ignore')
+        elif site == 'Perfect-G':
+            html = content.decode('Shift_JIS')
+        else:
+            html = content.decode('utf-8', 'ignore')
 
         s = bs4.BeautifulSoup(html, 'html.parser')
 
