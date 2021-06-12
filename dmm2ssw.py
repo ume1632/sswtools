@@ -723,7 +723,10 @@ def _format_wikitext_t(summ, astr, dstr, dir_col, add_column, retrieval):
              else '|{0[subtitle]}'.format(summ)
 
     # 出演者
-    wtext += '|{0}'.format(astr) if astr else '|[[ ]]'
+    if astr:
+        wtext += '|{0}'.format(astr)
+    else:
+        wtext += '|----' if ('総集編作品' in summ['note']) else '|[[ ]]'
 
     # 監督
     if dir_col:
