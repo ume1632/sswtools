@@ -21,7 +21,9 @@ _ReturnVal = _namedtuple('ReturnVal',
 # 対応サイトリスト
 siteList = (('https://www.mgstage.com/', 'MGS'),
             ('https://www.prestige-av.com', 'Prestige'),
+            ('https://adult.contents.fc2.com/', 'FC2'),
             ('https://www.heyzo.com/', 'HEYZO'),
+            ('https://www.dmm.com/', 'DMM'),
             ('https://www.caribbeancom.com/', 'カリビアンコム'),
             ('https://www.caribbeancompr.com/', 'カリビアンコムプレミアム'),
             ('https://www.pacopacomama.com/', 'パコパコママ'),
@@ -37,9 +39,11 @@ siteList = (('https://www.mgstage.com/', 'MGS'),
             ('https://www.h4610.com/', 'エッチな4610'),
             ('https://www.girls-blue.com/', 'Girls Blue'),
             ('https://pcolle.jp/', 'Pcolle'),
+            ('https://www.pcolle.com/', 'Pcolle'),
             ('https://gold2.h-paradise.net/', '人妻パラダイス'),
             ('https://faleno.jp/', 'FALENO'),
             ('https://www.akibacom.jp/', 'AKIBACOM'),
+            ('https://www.h-fish.com/', 'HAPPY FISH'),
 )
 
 # EUC-JPでデコードするサイト
@@ -82,6 +86,12 @@ PrestigeLabel = ( 'DOC',
                   '藪スタイル',
                   'TOY GIRL',
 )
+
+MGS_SERIES = {'働くドMさん.':       '働くドMさん',
+              'レンタル彼女':       'レンタル彼女',
+              '朝まではしご酒':     '朝まではしご酒',
+              '私立パコパコ女子大学 女子大生とトラックテントで即ハメ旅':    '私立パコパコ女子大学 女子大生とトラックテントで即ハメ旅',
+}
 
 # コマンドライン引数の解釈
 def _get_args(argv, p_args):
@@ -211,11 +221,7 @@ def mgsProductParser(soup, summ):
             summ['maker'] = 'プレステージ'
     else:
         if summ['maker'] == 'ナンパTV':
-            no = int(summ['pid'].replace('200GANA-', ''))
-            if no < 201:
-                summ['label'] = 'ナンパＴＶ'
-            else:
-                summ['label'] = 'ナンパＴＶ ' + str((no // 200 ) + 1)
+            summ['label'] = 'ナンパＴＶ'
         elif summ['maker'] == 'プレステージプレミアム(PRESTIGE PREMIUM)' or summ['maker'] == 'ARA':
             titles = summ['pid'].split('-')
             if titles[0] == '300MAAN':
@@ -224,9 +230,29 @@ def mgsProductParser(soup, summ):
                 summ['label'] = 'ARA'
             else:
                 summ['label'] = titles[0] + 'その他'
-            no = int(titles[1])
-            if no > 200:
-                summ['label'] = summ['label'] + ' ' + str((no // 200 ) + 1)
+
+    # レーベルリンク
+    if summ['maker'] != '' and summ['media'] != 'DVD動画' and summ['pid'] != '' and summ['maker'] != 'ナンパTV' and summ['maker'] != 'プレステージプレミアム(PRESTIGE PREMIUM)':
+        actuall = _libssw.check_actuallpage(summ['url'], summ['maker'], 'レーベル', summ['pid'])
+        if actuall:
+            summ['link_label'] = actuall
+
+    if summ['label'] != '' and summ['label'] != summ['maker']:
+        if summ['pid'] != '':
+            actuall = _libssw.check_actuallpage(summ['url'], summ['label'], 'レーベル', summ['pid'])
+            if actuall:
+                summ['link_label'] = actuall
+        else:
+            summ['link_label'] = actuall
+
+    # シリーズリンク
+    if summ['series'] in MGS_SERIES:
+        summ['link_series'] = MGS_SERIES.get(summ['series'])
+    elif summ['series'] != '' and summ['label'] != summ['series'] and summ['maker'] != summ['series']:
+        actuall = _libssw.check_actuallpage(summ['url'], summ['series'], 'シリーズ', summ['pid'])
+        if actuall:
+            summ['link_series'] = actuall
+
 
 #----------------------------
 # MGS動画(月額)
@@ -263,8 +289,20 @@ def mgsMonthlyParser(soup, summ):
     # メーカー設定
     if 'shiroutotv' in summ['url']:
         summ['maker'] = 'シロウトTV'
-    elif '' in summ['url']:
-        summ['nanpatv'] = 'ナンパTV'
+    elif 'nanpatv' in summ['url']:
+        summ['maker'] = 'ナンパＴＶ'
+
+    # レーベルリンク
+    if summ['pid'] != '' and summ['maker'] != '':
+        actuall = _libssw.check_actuallpage(summ['url'], summ['maker'], 'レーベル', summ['pid'])
+        if actuall:
+            summ['link_label'] = actuall
+
+    # シリーズリンク
+    if summ['series'] != '' and summ['maker'] != summ['series']:
+        actuall = _libssw.check_actuallpage(summ['url'], summ['series'], 'シリーズ', summ['pid'])
+        if actuall:
+            summ['link_series'] = actuall
 
 #----------------------------
 # Prestige
@@ -280,7 +318,7 @@ def prestigeParser(soup, summ):
     for idx in range(len(dtl)):
         dt = dtl[idx].string
         if dt == '出演：':
-            summ['actress'] = ddl[idx].string.strip().replace(' ', '')
+            tmpActress = ddl[idx].text.replace(' ','')
         elif dt == '収録時間：':
             summ['time'] = ddl[idx].string
         elif dt == '発売日：':
@@ -291,12 +329,57 @@ def prestigeParser(soup, summ):
             summ['pid'] = re.sub('^(TKT|SHA)', '', ddl[idx].string)
         elif dt == 'レーベル：':
             summ['label'] = ddl[idx].text.strip()
+        elif dt == 'シリーズ：':
+            summ['series'] = ddl[idx].text.strip()
 
     product_title_layout = Wrapper.find('div', class_="product_layout_01")
     summ['title'] = product_title_layout.h1.text.strip()
     package_layout = Wrapper.find('p', class_="package_layout")
     summ['image_sm'] = '&ref(https://www.prestige-av.com' + package_layout.img['src'] + ',147)'
     summ['image_lg'] = 'https://www.prestige-av.com' + package_layout.a['href']
+
+    if not re.search(r'[0-9]+名', tmpActress):
+        summ['actress'] = [(p.strip(), '', '') for p in tmpActress.split()]
+
+    # レーベルリンク
+    if summ['label'] != '' and summ['label'] != summ['maker']:
+        if summ['pid'] != '':
+            actuall = _libssw.check_actuallpage(summ['url'], summ['label'], 'レーベル', summ['pid'])
+            if actuall:
+                summ['link_label'] = actuall
+        else:
+            summ['link_label'] = actuall
+
+    # シリーズリンク
+    if summ['series'] != '' and summ['maker'] != summ['series']:
+        actuall = _libssw.check_actuallpage(summ['url'], summ['series'], 'シリーズ', summ['pid'])
+        if actuall:
+            summ['link_series'] = actuall
+
+#----------------------------
+# FC2
+#----------------------------
+def fc2Parser(soup, summ):
+    # ID取得
+    sp_url = summ['url'].split('/')
+    summ['pid'] = sp_url[4]
+
+    # タイトル取得
+    headerInfo = soup.find('div', class_='items_article_headerInfo')
+    summ['title'] = headerInfo.h3.text
+
+    # リリース日取得
+    Releasedate = headerInfo.find('div', class_='items_article_Releasedate').text.split(' ')
+    summ['release'] = Releasedate[-1]
+
+    # 販売者設定
+    for li in headerInfo.ul.find_all('li'):
+        tmp = li.text.strip()
+        if tmp.startswith('by'):
+           summ['label'] = li.a.text
+
+    # サムネイル取得
+    summ['image_sm'] = soup.find('meta', property='og:image')['content']
 
 #----------------------------
 # HEYZO
@@ -310,6 +393,40 @@ def heyzoParser(soup, summ):
     table_release_day = soup.find('tr', class_='table-release-day')
     release_day = table_release_day.find_all('td')
     summ['release'] = release_day[1].string.strip()
+
+#----------------------------
+# DMM
+#----------------------------
+def dmmParser(soup, summ):
+    # タイトル取得
+    detail = soup.find('div', class_='page-detail')
+    summ['title'] = detail.find('h1', id='title').text
+
+    # 作品情報を取得
+    table = soup.find('table', class_='mg-b20').find_all('tr')
+    for tr in table:
+        td = tr.find_all('td')
+        dt = td[0].text
+        if dt == '出演者：':
+            actress = td[1].text.split()
+            for act in actress:
+                summ['actress'].append(act)
+        elif dt == '収録時間：':
+            summ['time'] = td[1].text
+        elif dt == '発売日：':
+            summ['release'] = td[1].text
+        elif dt == 'メーカー：':
+            summ['maker'] = td[1].text
+        elif dt == '品番：':
+            tmpid = td[1].text
+            summ['pid'], summ['cid'] = _libssw.gen_pid(tmpid)
+
+    # サムネイル取得
+    sample = soup.find('div', id='sample-video')
+    tx10 = sample.find('div', class_='tx10').a
+    if tx10:
+        summ['image_sm'] = tx10.img['src']
+        summ['image_lg'] = tx10['href']
 
 #----------------------------
 # カリビアンコム
@@ -678,16 +795,22 @@ def girlsblueParser(soup, summ):
 
     # 仮名取得
     profile = soup.find('div', id="gallery_girl_profile").p.get_text(',').split(',')
-    summ['subtitle'] = profile[0].replace(' 名　前：', '').replace('　', '')
+    summ['subtitle'] = profile[0].split('：')[-1].replace('　','')
 
     # サイズ取得
-    tall = profile[1].split('：')
-    size3 = profile[2].split('：')
-    summ['size'] = 'T' + tall[1] + ' B' + size3[1].replace('-', ' W', 1).replace('-', ' H', 1)
+    tall = profile[1].split('：')[-1]
+    size3 = profile[2].split('：')[-1]
+    if tall != '---':
+        summ['size'] = 'T' + tall + ' B' + size3.replace('-', ' W', 1).replace('-', ' H', 1)
 
     # レーベル設定
-    no = re.sub("\\D", "", summ['pid'])
-    summ['label'] = 'Girl\'s Blue(' + str((int(no) // 200 ) * 200 + 1) + '～)'
+    no = int(re.sub("\\D", "", summ['pid']))
+    if no < 201:
+        summ['label'] = 'Girl\'s Blue'
+    elif no < 401:
+        summ['label'] = 'Girl\'s Blue(201～）'
+    else:
+        summ['label'] = 'Girl\'s Blue(' + str((no // 200 ) * 200 + 1) + '～)'
 
 #----------------------------
 # Pcolle
@@ -737,6 +860,9 @@ def hparaParser(soup, summ):
 
     # 作品情報
     model_prof = soup.find('div', class_='model-prof')
+    if not model_prof:
+        model_prof = soup.find('div', class_='model-prof-noflv')
+
     prof = model_prof.ul.find_all('li')
 
     if prof:
@@ -833,13 +959,43 @@ def akibaParser(soup, summ):
         for act in actress:
             summ['actress'].append(act)
 
+#----------------------------
+# HAPPY FISH
+#----------------------------
+def hfishParser(soup, summ):
+    # No
+    sp_url = summ['url'].split('=')
+    summ['pid'] = sp_url[-1]
+
+    # サムネイル取得
+    summ['image_lg'] = 'https://www.h-fish.com/free_photo/' + summ['pid'] + '/1.jpg'
+
+    # 仮名取得
+    profile = soup.find('div', id="gallery_girl_profile").p.get_text(',').split(',')
+    summ['subtitle'] = profile[0].split('：')[-1].replace('　','')
+
+    # サイズ取得
+    if '身　長' in profile[1]:
+        tall = profile[1].split('：')[-1]
+        size3 = profile[2].split('：')[-1]
+        summ['size'] = 'T' + tall + ' B' + size3.replace(' - ', ' W', 1).replace(' - ', ' H', 1)
+    else:
+        size = profile[1].split()
+        summ['size'] = size[0].replace('サイズ：', 'T') + ' B' + size[1] + ' W' + size[3] + ' H' + size[5]
+
+    # レーベル設定
+    summ['label'] = 'HAPPY FISH'
+
+
 ##############################
 # Parser
 ##############################
 javParser = {
     'MGS':                      mgsParser,
     'Prestige':                 prestigeParser,
+    'FC2':                      fc2Parser,
     'HEYZO':                    heyzoParser,
+    'DMM':                      dmmParser,
     'カリビアンコム':           caribParser,
     'カリビアンコムプレミアム': caribprParser,
     'パコパコママ':             pacpacoParser,
@@ -857,47 +1013,20 @@ javParser = {
     '人妻パラダイス':           hparaParser,
     'FALENO':                   falenoParser,
     'AKIBACOM':                 akibaParser,
+    'HAPPY FISH':               hfishParser,
 }
 
 #----------------------------
 # MGS動画
 #----------------------------
 def mgsFormat_t(summ):
-    wtext = ''
-    wtext += '|[[{0}>{1}]]|[[{2}>{3}]]|'.format(summ['pid'], summ['url'], summ['image_sm'], summ['image_lg'])
 
     date = summ['release'].replace('/', '-').replace('.', '-')
 
-    # 各シリーズ一覧ページの仕様に合わせこむ
-    if summ['maker'] == 'シロウトTV':
-        tmpTitle = summ['title'].split(summ['series'].replace('【初撮り】', ''))
-        if len(tmpTitle) == 2:
-            vol = tmpTitle[1].strip()
-            editTitle = tmpTitle[0].strip()
-            if editTitle and editTitle != '【初撮り】':
-                wtext += '{0}|{1}~~{2}|[[ ]]|{3}|{4}||\n'.format(vol, editTitle, summ['subtitle'], summ['time'], date)
-            else:
-                wtext += '{0}|{1}|[[ ]]|{2}|{3}||\n'.format(vol, summ['subtitle'], summ['time'], date)
-        else:
-            wtext += '|{0}~~{1}|[[ ]]|{2}|{3}||\n'.format(summ['title'], summ['subtitle'], summ['time'], date)
-    elif summ['maker'] == 'ARA':
-        wtext += '{0}~~{1}|[[ ]]|{2}|{3}||\n'.format(summ['title'], summ['subtitle'], summ['time'], date)
-    elif summ['maker'] == 'ラグジュTV':
-        tmpTitle = summ['title'].split('　')
-        if len(tmpTitle) == 2:
-            vol = tmpTitle[0].replace('ラグジュTV', '').strip()
-            editTitle = tmpTitle[1].strip()
-            wtext += '{0}|{1}~~{2}|[[ ]]|{3}|{4}||\n'.format(vol, editTitle, summ['subtitle'], summ['time'], date)
-        else:
-            vol = summ['title'].replace('ラグジュTV', '').strip()
-            wtext += '{0}|{1}|[[ ]]|{2}|{3}||\n'.format(vol, summ['subtitle'], summ['time'], date)
-    elif summ['series'] == 'マジ軟派、初撮。':
-        subtext = re.sub(r'マジ軟派、初撮。 ([0-9]*) ', r'vol.\1~~', summ['title'])
-        wtext += '{0}~~{1}|[[ ]]|{2}||\n'.format(subtext, summ['subtitle'], date)
-    elif summ['series'] == '百戦錬磨のナンパ師のヤリ部屋で、連れ込みSEX隠し撮り':
-        subtext = re.sub(r'百戦錬磨のナンパ師のヤリ部屋で、連れ込みSEX隠し撮り ([0-9]*) ', r'vol.\1~~', summ['title'])
-        wtext += '{0}~~{1}|[[ ]]|{2}||\n'.format(subtext, summ['subtitle'], date)
-    elif summ['media'] == 'DVD動画':
+    wtext = ''
+    wtext += '|[[{0}>{1}]]|[[{2}>{3}]]|'.format(summ['pid'], summ['url'], summ['image_sm'], summ['image_lg'])
+
+    if summ['media'] == 'DVD動画':
         wtext += '{0}|'.format(summ['title'])
         for act in summ['actress']:
             if act == summ['actress'][0]:
@@ -906,11 +1035,11 @@ def mgsFormat_t(summ):
                 wtext += '／[[{0}]]'.format(act[0])
         wtext += '|{0}||\n'.format(date.replace('.', '-'))
     else:
-        if summ['maker'] == 'プレステージプレミアム(PRESTIGE PREMIUM)':
-            wtext += '{0}~~{1}|[[ ]]|{2}|{3}|\n'.format(summ['title'], summ['subtitle'], date, summ['series'])
-        else:
-            wtext += '{0}~~{1}|[[ ]]|{2}||\n'.format(summ['title'], summ['subtitle'], date) if summ['subtitle'] \
-            else '{0}|[[ ]]|{1}||\n'.format(summ['title'], date)
+        wtext += '{0}~~{1}|[[ ]]|{2}|'.format(summ['title'], summ['subtitle'], date) if summ['subtitle'] \
+            else '{0}|[[ ]]|{1}|'.format(summ['title'], date)
+
+        wtext += '[[シリーズ一覧>{0}]]|\n'.format(summ['link_series']) if summ['link_series'] and summ['maker'] != 'シロウトTV' \
+            else '|\n'
 
     return wtext
 
@@ -918,8 +1047,25 @@ def mgsFormat_t(summ):
 # Prestige
 #----------------------------
 def prestigeFormat_t(summ):
+
+    # 出演者文字列の作成
+    pfmrslk = ()
+    pfmrsstr, pnum = _libssw.stringize_performers(summ['actress'],
+                                                  summ['number'],
+                                                  False)
+
+    print(pfmrsstr)
+
     wtext = ''
-    wtext += '|[[{0}>{1}]]|[[{2}>{3}]]|{4}|[[{5}]]|{6}||'.format(summ['pid'], summ['url'], summ['image_sm'], summ['image_lg'], summ['title'], summ['actress'], summ['release'].replace('/', '-'))
+    wtext += '|[[{0}>{1}]]|[[{2}>{3}]]|{4}|{5}|{6}||'.format(summ['pid'], summ['url'], summ['image_sm'], summ['image_lg'], summ['title'], pfmrsstr, summ['release'].replace('/', '-'))
+
+    return wtext
+
+#----------------------------
+# FC2
+#----------------------------
+def fc2Format_t(summ):
+    wtext = '|[[{0}>{1}]]|&ref({2},147)|{3}|[[ ]]|{4}||'.format(summ['pid'], summ['url'], summ['image_sm'], summ['title'], summ['release'].replace('/', '-'))
 
     return wtext
 
@@ -928,6 +1074,23 @@ def prestigeFormat_t(summ):
 #----------------------------
 def heyzoFormat_t(summ):
     return '非対応'
+
+#----------------------------
+# DMM
+#----------------------------
+def dmmFormat_t(summ):
+    # 出演者一覧
+    alist = ''
+    for act in summ['actress']:
+        if act == summ['actress'][-1]:
+            alist += '[[{0}]]'.format(act)
+        else:
+            alist += '[[{0}]]／'.format(act)
+
+    wtext = ''
+    wtext += '|[[{0}>{1}]]|[[{2}>{3}]]|{4}|{5}|{6}||'.format(summ['pid'], summ['url'], summ['image_sm'], summ['image_lg'], summ['title'], alist, summ['release'].replace('/', '-'))
+
+    return wtext
 
 #----------------------------
 # カリビアンコム
@@ -1112,13 +1275,25 @@ def falenoFormat_t(summ):
 def akibaFormat_t(summ):
     return '未対応'
 
+#----------------------------
+# HAPPY FISH
+#----------------------------
+def hfishFormat_t(summ):
+    no = re.sub("\\D", "", summ['pid'])
+
+    wtext = '|[[{0}>{1}]]|{2}~~{3}|[[ ]]|20--||'.format(no, summ['url'], summ['subtitle'], summ['size'])
+
+    return wtext
+
 ##############################
 # Format Table
 ##############################
 Format_t = {
     'MGS':                      mgsFormat_t,
     'Prestige':                 prestigeFormat_t,
+    'FC2':                      fc2Format_t,
     'HEYZO':                    heyzoFormat_t,
+    'DMM':                      dmmFormat_t,
     'カリビアンコム':           caribFormat_t,
     'カリビアンコムプレミアム': caribprFormat_t,
     'パコパコママ':             pacpacoFormat_t,
@@ -1136,6 +1311,7 @@ Format_t = {
     '人妻パラダイス':           hparaFormat_t,
     'FALENO':                   falenoFormat_t,
     'AKIBACOM':                 akibaFormat_t,
+    'HAPPY FISH':               hfishFormat_t,
 }
 
 #----------------------------
@@ -1250,24 +1426,12 @@ def prestigeFormat_a(summ):
     wtext += "]]"
 
     # レーベルリンク
-    if summ['maker'] != '' and summ['media'] != 'DVD動画' and summ['pid'] != '' and summ['maker'] != 'ナンパTV' and summ['maker'] != 'プレステージプレミアム(PRESTIGE PREMIUM)':
-        actuall = _libssw.check_actuallpage(summ['url'], summ['maker'], 'レーベル', summ['pid'])
-        if actuall:
-            wtext += "　[[(レーベル一覧)>{0}]]".format(actuall)
-
-    if summ['label'] != '' and summ['label'] != summ['maker']:
-        if summ['pid'] != '':
-            actuall = _libssw.check_actuallpage(summ['url'], summ['label'], 'レーベル', summ['pid'])
-            if actuall:
-                wtext += "　[[(レーベル一覧)>{0}]]".format(actuall)
-        else:
-            wtext += "　[[(レーベル一覧)>{0}]]".format(summ['label'])
+    if summ['link_label']:
+        wtext += "　[[(レーベル一覧)>{0}]]".format(summ['link_label'])
 
     # シリーズリンク
-    if summ['series'] != '' and summ['label'] != summ['series'] and summ['maker'] != summ['series']:
-        actuall = _libssw.check_actuallpage(summ['url'], summ['series'], 'シリーズ', summ['pid'])
-        if actuall:
-            wtext += "　[[(シリーズ一覧)>{0}]]".format(actuall)
+    if summ['link_series']:
+        wtext += "　[[(シリーズ一覧)>{0}]]".format(summ['link_series'])
 
     # 改行
     wtext += "\n"
@@ -1281,10 +1445,102 @@ def prestigeFormat_a(summ):
     return wtext
 
 #----------------------------
+# FC2
+#----------------------------
+def fc2Format_a(summ):
+
+    wtext = ''
+
+    # 配信日
+    if summ['release']:
+        date = '//' + summ['release'].replace('/', '.')
+    else:
+        date = '//'
+    wtext += date
+
+    # 品番
+    if summ['pid']:
+        wtext += ' FC2 PPV ' + summ['pid']
+
+    # タイトルとURL
+    wtext += '\n[[FC2 {0}（{1}）>{2}]]'.format(summ['title'], summ['label'], summ['url'])
+
+    # 画像URL
+    wtext += '\n&ref({0},147)'.format(summ['image_sm'])
+
+    return wtext
+
+#----------------------------
 # HEYZO
 #----------------------------
 def heyzoFormat_a(summ):
     wtext = "//{0}\n-[[HEYZO {1}>{2}]]".format(summ['release'].replace('-', '.'), summ['title'], summ['url'])
+    return wtext
+
+#----------------------------
+# DMM
+#----------------------------
+def dmmFormat_a(summ):
+    wtext = ''
+
+    # 配信日
+    if summ['release']:
+        date = '//' + summ['release'].replace('/', '.')
+    else:
+        date = '//'
+
+    wtext += date
+
+    # 品番
+    if summ['pid']:
+        wtext += ' '
+        wtext += summ['pid']
+
+    wtext += '\n[['
+
+    # タイトル
+    wtext += summ['title']
+
+    wtext += '（{0[maker]}／{0[label]}）'.format(summ) if summ['label'] and (summ['maker'] != summ['label']) \
+        else '（{0[maker]}）'.format(summ)
+
+    # URL
+    wtext += '>'
+    wtext += summ['url']
+    wtext += "]]"
+
+    # レーベルリンク
+    if summ['maker'] != '' and summ['media'] != 'DVD動画' and summ['pid'] != '' and summ['maker'] != 'ナンパTV' and summ['maker'] != 'プレステージプレミアム(PRESTIGE PREMIUM)':
+        actuall = _libssw.check_actuallpage(summ['url'], summ['maker'], 'レーベル', summ['pid'])
+        if actuall:
+            wtext += "　[[(レーベル一覧)>{0}]]".format(actuall)
+
+    if summ['label'] != '' and summ['label'] != summ['maker']:
+        if summ['pid'] != '':
+            actuall = _libssw.check_actuallpage(summ['url'], summ['label'], 'レーベル', summ['pid'])
+            if actuall:
+                wtext += "　[[(レーベル一覧)>{0}]]".format(actuall)
+        else:
+            wtext += "　[[(レーベル一覧)>{0}]]".format(summ['label'])
+
+    # 改行
+    wtext += "\n"
+
+    # 画像URL
+    if summ['image_lg'] == '':
+        wtext += "&ref({0},,147)".format(summ['image_sm'])
+    else:
+        wtext += "[[{0}>{1}]]".format(summ['image_sm'], summ['image_lg'])
+
+    # 出演者一覧
+    if len(summ['actress']) > 1:
+        wtext += '\n出演者：'
+        for act in summ['actress']:
+            if act == summ['actress'][-1]:
+                wtext += "[[{0}]]".format(act)
+            else:
+                wtext += "[[{0}]]／".format(act)
+
     return wtext
 
 #----------------------------
@@ -1323,7 +1579,7 @@ def caribprFormat_a(summ):
 # パコパコママ
 #----------------------------
 def pacpacoFormat_a(summ):
-    wtext = "//{0}\n-[[パコパコママ {1} {2}>{3}]]".format(summ['release'].replace('-', '.'), summ['title'], summ['actress'][0], summ['url'])
+    wtext = "//{0}\n-[[パコパコママ {1} {2}>{3}]]".format(summ['release'].replace('-', '.'), summ['title'], summ['actress'], summ['url'])
     return wtext
 
 #----------------------------
@@ -1583,12 +1839,9 @@ def h4610Format_a(summ):
 def girlsblueFormat_a(summ):
     wtext = ''
 
-    # 配信日
-    date = '//' + summ['release']
-    wtext += date
-
     # タイトルとURL
-    wtext += "\n[[Girl's Blue {0} {1} {2}>{3}]]".format(summ['pid'], summ['subtitle'], summ['size'], summ['url'])
+    wtext += "[[Girl's Blue {0} {1} {2}>{3}]]".format(summ['pid'], summ['subtitle'], summ['size'], summ['url']) if summ['size'] \
+        else "[[Girl's Blue {0} {1}>{2}]]".format(summ['pid'], summ['subtitle'], summ['url'])
 
     # レーベルリンク
     if summ['label'] != '':
@@ -1698,13 +1951,34 @@ def akibaFormat_a(summ):
 
     return wtext
 
+#----------------------------
+# HAPPY FISH
+#----------------------------
+def hfishFormat_a(summ):
+    wtext = ''
+
+    # タイトルとURL
+    wtext += "[[HAPPY FISH {0} {1} {2}>{3}]]".format(summ['pid'], summ['subtitle'], summ['size'], summ['url']) if summ['size'] \
+        else "[[HAPPY FISH {0} {1}>{2}]]".format(summ['pid'], summ['subtitle'], summ['url'])
+
+    # レーベルリンク
+    if summ['label'] != '':
+        wtext += "　[[(レーベル一覧)>{0}]]".format(summ['label'])
+
+    # 画像URL
+    wtext += "\n&ref({0},147)".format(summ['image_lg'])
+
+    return wtext
+
 ##############################
 # Format Actress
 ##############################
 Format_a = {
     'MGS':                      mgsFormat_a,
     'Prestige':                 prestigeFormat_a,
+    'FC2':                      fc2Format_a,
     'HEYZO':                    heyzoFormat_a,
+    'DMM':                      dmmFormat_a,
     'カリビアンコム':           caribFormat_a,
     'カリビアンコムプレミアム': caribprFormat_a,
     'パコパコママ':             pacpacoFormat_a,
@@ -1722,6 +1996,7 @@ Format_a = {
     '人妻パラダイス':           hparaFormat_a,
     'FALENO':                   falenoFormat_a,
     'AKIBACOM':                 akibaFormat_a,
+    'HAPPY FISH':               hfishFormat_a,
 }
 
 def main(props=_libssw.Summary(), p_args = argparse.Namespace):
