@@ -1610,7 +1610,7 @@ class DMMParser:
 
             rl = rm_nlcode(data).replace(' 10:00～', '')
 
-            if rl != '----':
+            if rl != '':
                 self._sm['release'] = rl
 
             _verbose('release: ', self._sm['release'])
