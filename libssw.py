@@ -1789,6 +1789,8 @@ class DMMParser:
                 img_lg = None
             try:
                 img_sm = img_a.find('img').get('src')
+                if img_sm.endswith('pl.jpg'):
+                    img_sm = img_sm.replace('pl.jpg', 'ps.jpg')
             except AttributeError:
                 img_sm = None
 
