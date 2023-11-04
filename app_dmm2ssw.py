@@ -81,6 +81,7 @@ def button1_action():
             if ('?' in props['url']):
                 urll = props['url'].split('?')
                 props['url'] = urll[0]
+            _libssw.clear_cache()
             b, status, data = _dmm2ssw.main(props, args)
         else:
             b, data = _jav2ssw.main(props, args)
