@@ -542,31 +542,18 @@ def aveParser(soup, summ):
 #----------------------------
 def scuteParser(soup, summ):
     # タイトル取得
-    title = soup.find('h3', class_='h1').string
-    summ['title'] = title
-    summ['pid'] = title.replace('#', '')
-
-    # サブタイトル取得
-    horizontal = soup.find('dl', class_='dl-horizontal').find_all('dd')
-    summ['subtitle'] = "{0}({1})".format(title, horizontal[0].string[0:2])
-
-    # サイズ取得
-    summ['size'] = "{0} {1}".format(horizontal[1].string, horizontal[2].string)
+    id = summ['url'].split('/')[4]
+    summ['subtitle'] = '#' + id
+    summ['pid'] = id
 
     # レーベル設定
-    label_id = re.search(r'[0-9]+', title)
+    label_id = re.search(r'[0-9]+', id)
     if label_id:
         summ['label'] = 'S-Cute Girls ' + str(int(label_id.group()) // 100 + 1)
 
-    # リリース日取得
-    contents = soup.find_all('article', class_='contents')
-    if contents:
-        summ['release'] = contents[-1].find('div', class_='meta').span.string
-
     # 画像URL取得
-    image_lg = soup.find('img', src=re.compile('^http://static.s-cute.com/images'))
-    summ['image_sm'] = image_lg['src'].replace('_400', '_150')
-    summ['image_lg'] = image_lg['src']
+    summ['image_sm'] = 'https://static.s-cute.com/images/' + id + '/' + id + '/' + id + '_150.jpg'
+    summ['image_lg'] = 'https://static.s-cute.com/images/' + id + '/' + id + '/' + id + '_400.jpg'
 
 #----------------------------
 # 舞ワイフ
