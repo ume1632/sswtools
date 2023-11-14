@@ -1625,7 +1625,7 @@ class DMMParser:
             mk = prop.getnext().find('a')
 
             try:
-                self._sm['maker_id'] = mkid = get_id(mk.get('href'))[0]
+                self._sm['maker_id'] = mkid = get_id(mk.get('href'), param='maker')[0]
             except AttributeError:
                 return
 
@@ -1656,7 +1656,7 @@ class DMMParser:
             lb = prop.getnext().find('a')
 
             try:
-                lbid = get_id(lb.get('href'))[0]
+                lbid = get_id(lb.get('href'), param='label')[0]
             except AttributeError:
                 return
 
@@ -1676,7 +1676,7 @@ class DMMParser:
             if sr is None:
                 return
 
-            srid = get_id(sr.get('href'))[0]
+            srid = get_id(sr.get('href'), param='series')[0]
 
             if self._n_i_s:
                 _verbose('not in series')
@@ -2887,7 +2887,7 @@ _re_cid = _re.compile(r'/cid=([a-z0-9_]+)/?')
 _re_id = _re.compile(r'/id=([\d,]+?)/')
 
 
-def get_id(url, cid=False, ignore=False):
+def get_id(url, cid=False, ignore=False, param=''):
     """URLからIDを取得"""
     try:
         return _re_cid.findall(url) if cid \
@@ -2895,8 +2895,18 @@ def get_id(url, cid=False, ignore=False):
     except IndexError:
         if ignore:
             return ()
-        _emsg('E', 'IDを取得できません: ', url)
+        if param != '':
+            return _get_id_from_query_string(url, param)
+        else:
+            _emsg('E', 'IDを取得できません: ', url)
 
+def _get_id_from_query_string(url, param):
+    """Query StringからIDを取得する"""
+    try:
+        query = _up.parse_qs(_up.urlparse(url).query)
+        return query[param]
+    except (ValueError, KeyError, IndexError):
+        _emsg('E', 'IDを取得できません: ', url)
 
 _sub_pid = (_re.compile(r'^(?:[hn]_)?\d*([a-z]+)(\d+).*', _re.I), r'\1-\2')
 
