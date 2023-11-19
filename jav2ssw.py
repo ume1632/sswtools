@@ -543,8 +543,8 @@ def aveParser(soup, summ):
 def scuteParser(soup, summ):
     # タイトル取得
     id = summ['url'].split('/')[4]
-    summ['subtitle'] = '#' + id
-    summ['pid'] = id
+    summ['pid'] = id.replace('_', ' ')
+    summ['subtitle'] = '#' + summ['pid']
 
     # レーベル設定
     label_id = re.search(r'[0-9]+', id)

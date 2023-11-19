@@ -554,7 +554,6 @@ _REDIRECTS = {'黒木麻衣':   '花野真衣',
               'EMIRI':      '丘咲エミリ',
               '松嶋葵':     '松嶋葵（2014）',
               '和久井ナナ': 'ふわりゆうき',
-              '松岡すず':   '松岡すず(2020)',
 }
 
 # FANZA独自の伏字 解除リスト
@@ -1769,8 +1768,7 @@ class DMMParser:
 
         elif tag == 'サイズ：':
             self._sm['size'] = getnext_text(prop)
-            if self._sm['size'] == 'T--- B-- W-- H':
-                self._sm['size'] = ''
+            self._sm['size'] = self._sm['size'].replace('W-- H', '').replace('T--- ', '').replace('B-- ', '').rstrip()
             _verbose('ama size: ', self._sm['size'])
 
         return
