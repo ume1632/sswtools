@@ -1577,7 +1577,7 @@ class DMMParser:
     def _ret_title(self):
         """タイトルの採取 (DMMParser)"""
         try:
-            tdmm = self._he.find('.//img[@class="tdmm"]').get('alt')
+            tdmm = self._he.find('.//h1[@id="title"]').text
         except AttributeError:
             _emsg('E', 'DMM作品ページではないようです。')
 
@@ -1780,16 +1780,12 @@ class DMMParser:
                 './/div[@id="sample-video"]/img').get('src')
             img_sm = img_lg.replace('jp.jpg', 'js.jpg')
         else:
-            img_a = self._he.find('.//a[@name="package-image"]')
+            meta_img = self._he.find('.//meta[@property="og:image"]')
             try:
-                img_lg = img_a.get('href')
+                img_lg = meta_img.get('content')
+                img_sm = img_lg.replace('pl.jpg', 'ps.jpg')
             except AttributeError:
                 img_lg = None
-            try:
-                img_sm = img_a.find('img').get('src')
-                if img_sm.endswith('pl.jpg'):
-                    img_sm = img_sm.replace('pl.jpg', 'ps.jpg')
-            except AttributeError:
                 img_sm = None
 
         return img_lg, img_sm
