@@ -1577,7 +1577,7 @@ class DMMParser:
     def _ret_title(self):
         """タイトルの採取 (DMMParser)"""
         try:
-            tdmm = self._he.find('.//h1[@id="title"]').text
+            tdmm = self._he.find('.//div[@class="hreview"]/h1').text
         except AttributeError:
             _emsg('E', 'DMM作品ページではないようです。')
 
