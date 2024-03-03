@@ -60,7 +60,6 @@ def button1_action():
         # ボタン無効化
         button3['state'] = tk.DISABLED
         button5['state'] = tk.DISABLED
-        button7['state'] = tk.DISABLED
 
         # オプション引数設定
         args = argparse.Namespace()
@@ -114,10 +113,6 @@ def button1_action():
 
             label7.config(text='取得完了')
 
-            if 'dmm.co.jp/mono/dvd/' in props['url']:
-                # DVD商品ならAt-mania検索ボタン有効化
-                button7['state'] = tk.NORMAL
-
         else:
             g_link_label = ''
             g_link_series = ''
@@ -138,7 +133,6 @@ def button2_action():
     # ボタン無効化
     button3['state'] = tk.DISABLED
     button5['state'] = tk.DISABLED
-    button7['state'] = tk.DISABLED
 
 # 一覧ページ編集画面を開く
 def button3_action():
@@ -159,11 +153,6 @@ def button5_action():
 def button6_action():
     root.clipboard_clear()
     root.clipboard_append(txtAct.get('1.0', 'end -1c'))
-
-# At-Mania検索
-def button7_action():
-    searchUrl = "https://www.google.com/search?hl=ja&q={}+site%3Aat-mania.com%2Fal%2F".format(g_pid)
-    _webbrowser.open_new_tab(searchUrl)
 
 # URL入力
 def enter_url(event):
@@ -298,8 +287,6 @@ button6 = tk.Button(f7, text='クリップボードにコピー', width=15, comm
 button6.pack(padx = 5, side = tk.LEFT)
 
 # クリップボードへのコピーボタン 2
-button7 = tk.Button(f7, text='AT-Mania品番検索', width=20, command=button7_action, state=tk.DISABLED)
-button7.pack(padx = 5, side = tk.LEFT)
 f7.pack(padx = 10, pady = 5, side = tk.TOP, anchor = tk.NW)
 
 # Label 7
