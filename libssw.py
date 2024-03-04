@@ -1782,8 +1782,15 @@ class DMMParser:
         else:
             meta_img = self._he.find('.//meta[@property="og:image"]')
             try:
-                img_lg = meta_img.get('content')
-                img_sm = img_lg.replace('pl.jpg', 'ps.jpg')
+                meta_img = meta_img.get('content')
+                if meta_img.endswith('ps.jpg'):
+                    # 配信動画, VR
+                    img_sm = meta_img
+                    img_lg = meta_img.replace('ps.jpg', 'pl.jpg')
+                else:
+                    # DVD
+                    img_lg = meta_img
+                    img_sm = meta_img.replace('pl.jpg', 'ps.jpg')
             except AttributeError:
                 img_lg = None
                 img_sm = None
