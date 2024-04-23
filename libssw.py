@@ -1782,8 +1782,13 @@ class DMMParser:
         else:
             meta_img = self._he.find('.//meta[@property="og:image"]')
             try:
-                img_lg = meta_img.get('content')
-                img_sm = img_lg.replace('pl.jpg', 'ps.jpg')
+                img_def = meta_img.get('content')
+                if service == 'dvd':
+                    img_lg = img_def
+                    img_sm = img_lg.replace('pl.jpg', 'ps.jpg')
+                else:
+                    img_sm = img_def
+                    img_lg = img_sm.replace('ps.jpg', 'pl.jpg')
             except AttributeError:
                 img_lg = None
                 img_sm = None
