@@ -52,8 +52,7 @@ charsetEucJp = ( 'カリビアンコム',
                  'パコパコママ',
                  'Getchu',
                  'エッチな4610',
-                 'RSA',
-                 '人妻パラダイス'
+                 'RSA'
 )
 
 # MGS独占メーカー
@@ -841,25 +840,34 @@ def hparaParser(soup, summ):
     model_id = sp_url[1]
     summ['pid'] = re.sub("\\D", "", model_id)
 
-    # サムネイル設定
-    summ['image_sm'] = 'http://gold2.h-paradise.net/images/gold/sample/{0}/thumb/top02.jpg'.format(model_id)
-    summ['image_lg'] = 'http://gold2.h-paradise.net/images/gold/sample/{0}/thumb/{0}.jpg'.format(model_id)
-
     # 作品情報
-    model_prof = soup.find('div', class_='model-prof')
-    if not model_prof:
-        model_prof = soup.find('div', class_='model-prof-noflv')
+    model_info = soup.find('div', class_='model-info')
+    if model_info:
+        # サムネイル設定
+        if model_id.startswith('m'):
+            summ['image_sm'] = 'http://file3.h-paradise.net/free/model/{0}/thumb/prof.jpg'.format(model_id)
+            summ['image_lg'] = 'http://file3.h-paradise.net/free/model/{0}/gra/saishin_top.jpg'.format(model_id)
+        else:
+            model_img = soup.find('div', class_='model-img')
+            if model_img:
+                image_base = model_img.img['src']
+                summ['image_sm'] = image_base.replace('top02.jpg', 'prof.jpg')
 
-    prof = model_prof.ul.find_all('li')
+        prof = model_info.ul.find_all('li')
 
-    if prof:
-        # タイトル取得
-        name = prof[0].text.replace('名前：', '')
-        age = prof[1].text.replace('年齢：', '')
-        summ['title'] = '{0} {1}'.format(name, age)
+        if prof:
+            # タイトル取得
+            name = prof[0].text.replace('名前：', '')
+            age = prof[1].text.replace('年齢：', '')
+            summ['title'] = '{0} {1}'.format(name, age)
 
-        # サイズ取得
-        summ['size'] = prof[2].text.replace('サイズ：', '')
+            # サイズ取得
+            summ['size'] = prof[2].text.replace('サイズ：', '')
+    elif 'ppv' in model_id:
+        model_id = model_id.replace('_ppv', '')
+        summ['image_sm'] = 'http://file3.h-paradise.net/free/ppv/{0}/sam.jpg'.format(model_id)
+        summ['image_lg'] = 'http://file3.h-paradise.net/free/ppv/{0}/sam_b.jpg'.format(model_id)
+        summ['title'] = soup.find('h3').text
 
 #----------------------------
 # FALENO
@@ -1243,7 +1251,10 @@ def pcolleFormat_t(summ):
 # 人妻パラダイス
 #----------------------------
 def hparaFormat_t(summ):
-    wtext = '|[[{0}>{1}]]|{2}~~{3}|[[ ]]|#ref({4})||'.format(summ['pid'], summ['url'], summ['title'], summ['size'], summ['image_sm'])
+    if summ['image_lg']:
+        wtext = '|[[{0}>{1}]]|[[{2}>{3}]]|{4}~~{5}|[[ ]]|||'.format(summ['pid'], summ['url'], summ['image_sm'], summ['image_lg'], summ['title'], summ['size'])
+    else:
+        wtext = '|[[{0}>{1}]]|[[{2}]]|{3}~~{4}|[[ ]]|||'.format(summ['pid'], summ['url'], summ['image_sm'], summ['title'], summ['size'])
 
     return wtext
 
@@ -1877,7 +1888,10 @@ def hparaFormat_a(summ):
     wtext += "\n[[人妻パラダイス {0} {1}>{2}]]".format(summ['title'], summ['size'], summ['url'])
 
     # 画像URL
-    wtext += "\n&ref({0})".format(summ['image_lg'])
+    if summ['image_lg']:
+        wtext += "\n[[&ref({0},147)>{1}]]".format(summ['image_sm'], summ['image_lg'])
+    else:
+        wtext += "\n&ref({0},147)".format(summ['image_sm'])
 
     return wtext
 
