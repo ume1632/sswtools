@@ -663,8 +663,8 @@ def _format_wikitext_a(summ, anum, astr, service):
     wtext = ''
 
     # 発売日
-    date = summ['release'].replace('/', '.')
-    wtext += '//{0} {1[pid]}\n'.format(date, summ)
+    date = summ['release']
+    wtext += '{0[release]} {0[pid]}\n'.format(summ)
     # 自動修正があった場合のDMM上のタイトル (コメント)
     if summ['title_dmm']:
         wtext += '//{0[title_dmm]} #検索用\n'.format(summ)
@@ -737,7 +737,7 @@ def _format_wikitext_t(summ, astr, dstr, dir_col, add_column, retrieval):
         wtext += '|' + '|'.join(add_column)
 
     # 発売日
-    wtext += '|{0[release]}'.format(summ).replace('/', '-')
+    wtext += '|{0[release]}'.format(summ)
 
     # 備考
     if retrieval == 'label' and summ['link_series']:
