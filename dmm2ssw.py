@@ -767,7 +767,7 @@ def _format_wikitext_t_shyn(summ, astr):
              else '|'
 
     # 発売日
-    wtext += '|{0[release]}|\n'.format(summ).replace('/', '-')
+    wtext += '|{0[release]}|\n'.format(summ)
 
     # 表ヘッダ
     wtext += '|~NAME|ACTRESS|NOTE|\n'
