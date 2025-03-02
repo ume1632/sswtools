@@ -28,19 +28,17 @@ siteList = (('https://www.mgstage.com/', 'MGS'),
             ('https://my.tokyo-hot.com/', 'Tokyo Hot'),
             ('https://www.tokyo-hot.com/', 'Tokyo Hot'),
             ('https://www.aventertainments.com/', 'AVE'),
-            ('https://www.s-cute.com/', 'S-Cute'),
             ('https://mywife.cc/', '舞ワイフ'),
             ('https://www.g-area.org/', 'Perfect-G'),
             ('https://duga.jp/', 'DUGA'),
             ('https://dl.getchu.com/', 'Getchu'),
             ('https://www.h4610.com/', 'エッチな4610'),
-            ('https://www.girls-blue.com/', 'Girls Blue'),
             ('https://pcolle.jp/', 'Pcolle'),
             ('https://www.pcolle.com/', 'Pcolle'),
             ('https://gold2.h-paradise.net/', '人妻パラダイス'),
             ('https://faleno.jp/', 'FALENO'),
             ('https://www.akibacom.jp/', 'AKIBACOM'),
-            ('https://www.h-fish.com/', 'HAPPY FISH'),
+            ('https://www.suruga-ya.jp/', '駿河屋'),
 )
 
 # EUC-JPでデコードするサイト
@@ -375,28 +373,44 @@ def dmmParser(soup, summ):
 #----------------------------
 def caribParser(soup, summ):
     # タイトル取得
-    summ['title'] = soup.find('h1', itemprop='name').string.replace('〜','～').replace(']','&#93;')
+    heading = soup.find('div', class_='heading')
+    if heading:
+        summ['title'] = heading.find('h1', itemprop='name').string.replace('〜','～').replace(']','&#93;')
 
     # 女優一覧取得
     detail_spec = soup.find('li', class_='movie-spec')
     if detail_spec:
         actress = detail_spec.find_all('span', itemprop='name')
-    for act in actress:
-        summ['actress'].append(act.string)
+        for act in actress:
+            summ['actress'].append(act.string)
 
     # リリース日取得
-    summ['release'] = soup.find('span', itemprop='datePublished').string
+    sp_url = summ['url'].split('/')
+    date = sp_url[4].split('-')[0]
+    if len(date) == 6:
+        summ['release'] = '20' + date[4:] + '/' + date[:2] + '/' + date[2:4]
 
 #----------------------------
 # カリビアンコムプレミアム
 #----------------------------
 def caribprParser(soup, summ):
     # タイトル取得
-    summ['title'] = soup.find('h1').string
+    heading = soup.find('div', class_='heading')
+    if heading:
+        summ['title'] = heading.find('h1').string.replace('〜','～').replace(']','&#93;')
+
+    # 女優一覧取得
+    detail_spec = soup.find('li', class_='movie-spec')
+    if detail_spec:
+        actress = detail_spec.find_all('a', class_='spec-item')
+        for act in actress:
+            summ['actress'].append(act.string)
 
     # リリース日取得
-    spec_content = soup.find_all('span', class_='spec-content')
-    summ['release'] = spec_content[1].string
+    sp_url = summ['url'].split('/')
+    date = sp_url[4].split('_')[0]
+    if len(date) == 6:
+        summ['release'] = '20' + date[4:] + '/' + date[:2] + '/' + date[2:4]
 
 #----------------------------
 # TOKYO-HOT
@@ -457,24 +471,6 @@ def aveParser(soup, summ):
             summ['release'] = "{0}/{1:02d}/{2:02d}".format(release[2], int(release[0]), int(release[1]))
         elif info_title == 'シリーズ':
             summ['series'] = info.find('span', class_='value').string
-
-#----------------------------
-# S-Cute
-#----------------------------
-def scuteParser(soup, summ):
-    # タイトル取得
-    id = summ['url'].split('/')[4]
-    summ['pid'] = id.replace('_', ' ')
-    summ['subtitle'] = '#' + summ['pid']
-
-    # レーベル設定
-    label_id = re.search(r'[0-9]+', id)
-    if label_id:
-        summ['label'] = 'S-Cute Girls ' + str(int(label_id.group()) // 100 + 1)
-
-    # 画像URL取得
-    summ['image_sm'] = 'https://static.s-cute.com/images/' + id + '/' + id + '/' + id + '_150.jpg'
-    summ['image_lg'] = 'https://static.s-cute.com/images/' + id + '/' + id + '/' + id + '_400.jpg'
 
 #----------------------------
 # 舞ワイフ
@@ -664,36 +660,6 @@ def h4610Parser(soup, summ):
                 summ['release'] = ddSet[i].string.strip()
 
 #----------------------------
-# Girl's Blue
-#----------------------------
-def girlsblueParser(soup, summ):
-    # No
-    sp_url = summ['url'].split('=')
-    summ['pid'] = sp_url[-1]
-
-    # サムネイル取得
-    summ['image_lg'] = 'https://www.girls-blue.com/free_photo/' + summ['pid'] + '/img1.jpg'
-
-    # 仮名取得
-    profile = soup.find('div', id="gallery_girl_profile").p.get_text(',').split(',')
-    summ['subtitle'] = profile[0].split('：')[-1].replace('　','')
-
-    # サイズ取得
-    tall = profile[1].split('：')[-1]
-    size3 = profile[2].split('：')[-1]
-    if tall != '---':
-        summ['size'] = 'T' + tall + ' B' + size3.replace('-', ' W', 1).replace('-', ' H', 1)
-
-    # レーベル設定
-    no = int(re.sub("\\D", "", summ['pid']))
-    if no < 201:
-        summ['label'] = 'Girl\'s Blue'
-    elif no < 401:
-        summ['label'] = 'Girl\'s Blue(201～）'
-    else:
-        summ['label'] = 'Girl\'s Blue(' + str((no // 200 ) * 200 + 1) + '～)'
-
-#----------------------------
 # Pcolle
 #----------------------------
 def pcolleParser(soup, summ):
@@ -852,32 +818,38 @@ def akibaParser(soup, summ):
             summ['actress'].append(act)
 
 #----------------------------
-# HAPPY FISH
+# 駿河屋
 #----------------------------
-def hfishParser(soup, summ):
-    # No
-    sp_url = summ['url'].split('=')
-    summ['pid'] = sp_url[-1]
+def surugaParser(soup, summ):
+    # タイトル
+    easyzoom = soup.find('div', class_='easyzoom')
+    easyzoom_img = easyzoom.find('img')
+    title = easyzoom_img['alt']
+    summ['title'] = title.split('/')[0].rstrip() 
 
-    # サムネイル取得
-    summ['image_lg'] = 'https://www.h-fish.com/free_photo/' + summ['pid'] + '/1.jpg'
+    detailInfo = soup.find('div', id='item_detailInfo').table.find_all('tr')
+    for i in range(min(len(detailInfo), 2)):
+        th_all = detailInfo[i].find_all('th')
+        td_all = detailInfo[i].find_all('td')
+        for j in range(len(th_all)):
+            th = th_all[j].text.strip()
+            td = td_all[j].text.strip()
+            if th == '発売日':
+                summ['release'] = td
+            elif th == 'メーカー':
+                summ['maker'] = td
+            elif th == '型番':
+                summ['pid'] = td
+            elif th == '出演':
+                summ['actress'].append(td)
 
-    # 仮名取得
-    profile = soup.find('div', id="gallery_girl_profile").p.get_text(',').split(',')
-    summ['subtitle'] = profile[0].split('：')[-1].replace('　','')
+    # 商品サムネイル
+    image_sm = soup.find('meta', property='og:image')
+    if image_sm:
+        summ['image_sm'] = image_sm['content']
 
-    # サイズ取得
-    if '身　長' in profile[1]:
-        tall = profile[1].split('：')[-1]
-        size3 = profile[2].split('：')[-1]
-        summ['size'] = 'T' + tall + ' B' + size3.replace(' - ', ' W', 1).replace(' - ', ' H', 1)
-    else:
-        size = profile[1].split()
-        summ['size'] = size[0].replace('サイズ：', 'T') + ' B' + size[1] + ' W' + size[3] + ' H' + size[5]
-
-    # レーベル設定
-    summ['label'] = 'HAPPY FISH'
-
+    if summ['release'] == '':
+        summ['release'] = '発売日不明'
 
 ##############################
 # Parser
@@ -891,18 +863,16 @@ javParser = {
     'カリビアンコムプレミアム': caribprParser,
     'Tokyo Hot':                tokyoParser,
     'AVE':                      aveParser,
-    'S-Cute':                   scuteParser,
     '舞ワイフ':                 mywifeParser,
     'Perfect-G':                gareaParser,
     'DUGA':                     dugaParser,
     'Getchu':                   getchuParser,
     'エッチな4610':             h4610Parser,
-    'Girls Blue':               girlsblueParser,
     'Pcolle':                   pcolleParser,
     '人妻パラダイス':           hparaParser,
     'FALENO':                   falenoParser,
     'AKIBACOM':                 akibaParser,
-    'HAPPY FISH':               hfishParser,
+    '駿河屋':                   surugaParser,
 }
 
 #----------------------------
@@ -1014,16 +984,6 @@ def aveFormat_t(summ):
     return wtext
 
 #----------------------------
-# S-Cute
-#----------------------------
-def scuteFormat_t(summ):
-    wtext = ''
-    wtext += '|[[{0}>{1}]]|[[{2}>{3}]]|'.format(summ['pid'], summ['url'], summ['image_sm'], summ['image_lg'])
-    wtext += '{0}~~{1}|[[ ]]|{2}||\n'.format(summ['subtitle'], summ['size'].replace(' ', '~~'), summ['release'])
-
-    return wtext
-
-#----------------------------
 # 舞ワイフ
 #----------------------------
 def mywifeFormat_t(summ):
@@ -1087,16 +1047,6 @@ def h4610Format_t(summ):
     return wtext
 
 #----------------------------
-# Girls Blue
-#----------------------------
-def girlsblueFormat_t(summ):
-    no = re.sub("\\D", "", summ['pid'])
-
-    wtext = '|[[{0}>{1}]]|#ref({2},80)|{3}~~{4}|[[ ]]|||'.format(no, summ['url'], summ['image_lg'], summ['subtitle'], summ['size'])
-
-    return wtext
-
-#----------------------------
 # Pcolle
 #----------------------------
 def pcolleFormat_t(summ):
@@ -1132,12 +1082,18 @@ def akibaFormat_t(summ):
     return '未対応'
 
 #----------------------------
-# HAPPY FISH
+# 駿河屋
 #----------------------------
-def hfishFormat_t(summ):
-    no = re.sub("\\D", "", summ['pid'])
+def surugaFormat_t(summ):
+    # 出演者一覧
+    alist = ''
+    for act in summ['actress']:
+        if act == summ['actress'][-1]:
+            alist += '[[{0}]]'.format(act)
+        else:
+            alist += '[[{0}]]／'.format(act)
 
-    wtext = '|[[{0}>{1}]]|{2}~~{3}|[[ ]]|20--||'.format(no, summ['url'], summ['subtitle'], summ['size'])
+    wtext = '|[[{0}>{1}]]|&ref({2},147,200)|{3}|{4}|{5}||'.format(summ['pid'], summ['url'], summ['image_sm'], summ['title'], alist, summ['release'])
 
     return wtext
 
@@ -1153,18 +1109,16 @@ Format_t = {
     'カリビアンコムプレミアム': caribprFormat_t,
     'Tokyo Hot':                tokyoFormat_t,
     'AVE':                      aveFormat_t,
-    'S-Cute':                   scuteFormat_t,
     '舞ワイフ':                 mywifeFormat_t,
     'Perfect-G':                gareaFormat_t,
     'DUGA':                     dugaFormat_t,
     'Getchu':                   getchuFormat_t,
     'エッチな4610':             h4610Format_t,
-    'Girls Blue':               girlsblueFormat_t,
     'Pcolle':                   pcolleFormat_t,
     '人妻パラダイス':           hparaFormat_t,
     'FALENO':                   falenoFormat_t,
     'AKIBACOM':                 akibaFormat_t,
-    'HAPPY FISH':               hfishFormat_t,
+    '駿河屋':                   surugaFormat_t,
 }
 
 #----------------------------
@@ -1362,9 +1316,33 @@ def caribFormat_a(summ):
 
     return wtext
 
+#----------------------------
+# カリビアンコム プレミアム
+#----------------------------
 def caribprFormat_a(summ):
-    # 未作成
-    return ''
+    wtext = ''
+
+    isSingle = (len(summ['actress']) == 1)
+
+    # 配信日・品番
+    wtext += "{}\n".format(summ['release'])
+
+    # タイトル
+    if isSingle and (not summ['actress'][0] in summ['title']):
+        # 女優名を足す
+        summ['title'] += ' ' +  summ['actress'][0]
+
+    wtext += "-[[カリビアンコム プレミアム {0}>{1}]]".format(summ['title'], summ['url'])
+
+    if not isSingle:
+        wtext += '~~出演者：'
+        for act in summ['actress']:
+            if act == summ['actress'][-1]:
+                wtext += "[[{0}]]".format(act)
+            else:
+                wtext += "[[{0}]]／".format(act)
+
+    return wtext
 
 #----------------------------
 # Tokyo Hot
@@ -1432,33 +1410,6 @@ def aveFormat_a(summ):
                 wtext += "[[{0}]]／".format(act)
 
     wtext += '\n'
-
-    return wtext
-
-#----------------------------
-# S-Cute
-#----------------------------
-def scuteFormat_a(summ):
-    wtext = ''
-
-    # 配信日
-    wtext += summ['release']
-
-    # サイト名
-    wtext += '\n[[S-Cute '
-
-    # タイトルとURL
-    wtext += "{0} {1}>{2}]]".format(summ['subtitle'], summ['size'], summ['url'])
-
-    # レーベルリンク
-    if summ['label'] != '':
-        wtext += "　[[(レーベル一覧)>{0}]]".format(summ['label'])
-
-    # 改行
-    wtext += "\n"
-
-    # 画像URL
-    wtext += "[[{0}>{1}]]".format(summ['image_sm'], summ['image_lg'])
 
     return wtext
 
@@ -1597,25 +1548,6 @@ def h4610Format_a(summ):
     return wtext
 
 #----------------------------
-# Girls Blue
-#----------------------------
-def girlsblueFormat_a(summ):
-    wtext = ''
-
-    # タイトルとURL
-    wtext += "[[Girl's Blue {0} {1} {2}>{3}]]".format(summ['pid'], summ['subtitle'], summ['size'], summ['url']) if summ['size'] \
-        else "[[Girl's Blue {0} {1}>{2}]]".format(summ['pid'], summ['subtitle'], summ['url'])
-
-    # レーベルリンク
-    if summ['label'] != '':
-        wtext += "　[[(レーベル一覧)>{0}]]".format(summ['label'])
-
-    # 画像URL
-    wtext += "\n&ref({0},147)".format(summ['image_lg'])
-
-    return wtext
-
-#----------------------------
 # Pcolle
 #----------------------------
 def pcolleFormat_a(summ):
@@ -1714,21 +1646,33 @@ def akibaFormat_a(summ):
     return wtext
 
 #----------------------------
-# HAPPY FISH
+# 駿河屋
 #----------------------------
-def hfishFormat_a(summ):
+def surugaFormat_a(summ):
     wtext = ''
 
-    # タイトルとURL
-    wtext += "[[HAPPY FISH {0} {1} {2}>{3}]]".format(summ['pid'], summ['subtitle'], summ['size'], summ['url']) if summ['size'] \
-        else "[[HAPPY FISH {0} {1}>{2}]]".format(summ['pid'], summ['subtitle'], summ['url'])
+    # 配信日
+    date = summ['release']
+    wtext += date
 
-    # レーベルリンク
-    if summ['label'] != '':
-        wtext += "　[[(レーベル一覧)>{0}]]".format(summ['label'])
+    # 品番
+    if summ['pid']:
+        wtext += ' ' + summ['pid']
+
+    # タイトルとURL
+    wtext += '\n[[{0}（{1}）>{2}]]'.format(summ['title'], summ['maker'], summ['url'])
 
     # 画像URL
-    wtext += "\n&ref({0},147)".format(summ['image_lg'])
+    wtext += "\n&ref({0},147,200)".format(summ['image_sm'])
+
+    # 出演者一覧
+    if len(summ['actress']) > 1:
+        wtext += '\n出演者：'
+        for act in summ['actress']:
+            if act == summ['actress'][-1]:
+                wtext += "[[{0}]]".format(act)
+            else:
+                wtext += "[[{0}]]／".format(act)
 
     return wtext
 
@@ -1744,18 +1688,16 @@ Format_a = {
     'カリビアンコムプレミアム': caribprFormat_a,
     'Tokyo Hot':                tokyoFormat_a,
     'AVE':                      aveFormat_a,
-    'S-Cute':                   scuteFormat_a,
     '舞ワイフ':                 mywifeFormat_a,
     'Perfect-G':                gareaFormat_a,
     'DUGA':                     dugaFormat_a,
     'Getchu':                   getchuFormat_a,
     'エッチな4610':             h4610Format_a,
-    'Girls Blue':               girlsblueFormat_a,
     'Pcolle':                   pcolleFormat_a,
     '人妻パラダイス':           hparaFormat_a,
     'FALENO':                   falenoFormat_a,
     'AKIBACOM':                 akibaFormat_a,
-    'HAPPY FISH':               hfishFormat_a,
+    '駿河屋':                   surugaFormat_a,
 }
 
 def main(props=_libssw.Summary(), p_args = argparse.Namespace):
