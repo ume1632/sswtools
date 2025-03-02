@@ -1775,25 +1775,24 @@ class DMMParser:
 
     def _ret_images(self, service):
         """パッケージ画像のURLの取得"""
-        if service == 'ama':
-            img_lg = self._he.find(
-                './/div[@id="sample-video"]/img').get('src')
-            img_sm = img_lg.replace('jp.jpg', 'js.jpg')
-        else:
-            meta_img = self._he.find('.//meta[@property="og:image"]')
-            try:
-                meta_img = meta_img.get('content')
-                if meta_img.endswith('ps.jpg'):
-                    # 配信動画, VR
-                    img_sm = meta_img
-                    img_lg = meta_img.replace('ps.jpg', 'pl.jpg')
-                else:
-                    # DVD
-                    img_lg = meta_img
-                    img_sm = meta_img.replace('pl.jpg', 'ps.jpg')
-            except AttributeError:
-                img_lg = None
-                img_sm = None
+        meta_img = self._he.find('.//meta[@property="og:image"]')
+        try:
+            meta_img = meta_img.get('content')
+            if meta_img.endswith('ps.jpg'):
+                # 配信動画, VR
+                img_sm = meta_img
+                img_lg = meta_img.replace('ps.jpg', 'pl.jpg')
+            if meta_img.endswith('jp.jpg'):
+                # 素人
+                img_sm = meta_img.replace('jp.jpg', 'js.jpg')
+                img_lg = meta_img
+            else:
+                # DVD
+                img_lg = meta_img
+                img_sm = meta_img.replace('pl.jpg', 'ps.jpg')
+        except AttributeError:
+            img_lg = None
+            img_sm = None
 
         return img_lg, img_sm
 
