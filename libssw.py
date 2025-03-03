@@ -1782,7 +1782,7 @@ class DMMParser:
                 # 配信動画, VR
                 img_sm = meta_img
                 img_lg = meta_img.replace('ps.jpg', 'pl.jpg')
-            if meta_img.endswith('jp.jpg'):
+            elif meta_img.endswith('jp.jpg'):
                 # 素人
                 img_sm = meta_img.replace('jp.jpg', 'js.jpg')
                 img_lg = meta_img
