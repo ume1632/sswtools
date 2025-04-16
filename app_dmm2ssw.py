@@ -33,13 +33,13 @@ def _list_pfmrs(plist):
 def open_wiki(*pages):
     """wikiページをウェブブラウザで開く"""
     for p in filter(None, pages):
-        url = _up.urljoin('http://sougouwiki.com/d/', _libssw.quote(p))
+        url = _up.urljoin('http://seesaawiki.jp/w/sougouwiki/d/', _libssw.quote(p))
         resp, he = _libssw.open_url(url)
         if resp.status == 200:
             dest = _libssw._rdrparser(p, he)
             if dest != p and dest != '':
                 # リダイレクト先を再度読み込み
-                url = _up.urljoin('http://sougouwiki.com/d/', _libssw.quote(dest))
+                url = _up.urljoin('http://seesaawiki.jp/w/sougouwiki/d/', _libssw.quote(dest))
                 resp, he = _libssw.open_url(url)
             inner = he.find_class('inner')[0]
             editurl = inner.xpath('.//a')[0].get('href')

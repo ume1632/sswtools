@@ -45,7 +45,7 @@ _VERBOSE = 0
 
 RECHECK = False
 
-BASEURL_SSW = 'http://sougouwiki.com'
+BASEURL_SSW = 'http://seesaawiki.jp/w/sougouwiki'
 BASEURL_ACT = 'http://actress.dmm.co.jp'
 
 ACTURL = BASEURL_ACT + '/-/detail/=/actress_id={}/'
@@ -1026,7 +1026,7 @@ class __OpenUrl:
             _emsg('E', '不正なURL?: ', url)
 
         if cache:
-            maxage = '7200' if site == 'sougouwiki.com' else '86400'
+            maxage = '7200' if site == 'seesaawiki.jp' else '86400'
             headers = {'cache-control': 'private, max-age={}'.format(maxage)}
         else:
             headers = dict()
@@ -2716,7 +2716,7 @@ def follow_redirect(page):
             return ''
 
     # 未知のページのリダイレクト先チェックまたは再チェック
-    url = _up.urljoin('http://sougouwiki.com/d/', quote(page))
+    url = _up.urljoin('http://seesaawiki.jp/w/sougouwiki/d/', quote(page))
 
     resp, he = open_url(url)
 
@@ -2741,7 +2741,7 @@ def _search_listpage(url, listname, listtype, pid):
 
     # urlで検索
     resp, he = open_url(
-        'http://sougouwiki.com/search?keywords={}'.format(
+        'http://seesaawiki.jp/w/sougouwiki/search?keywords={}'.format(
             quote(search_url, safe='')),
         cache=False)
 
@@ -2989,7 +2989,7 @@ class _GetActName:
 
     def __call__(self, elems):
         try:
-            data = elems.find('.//h1').text.strip()
+            data = elems.find_class('bold')[0].text.strip()
         except AttributeError:
             raise _InvalidPage
 
@@ -3076,7 +3076,7 @@ def ssw_searchnext(el):
 def open_ssw(*pages):
     """wikiページをウェブブラウザで開く"""
     for p in filter(None, pages):
-        url = _up.urljoin('http://sougouwiki.com/d/', quote(p))
+        url = _up.urljoin('http://seesaawiki.jp/w/sougouwiki/d/', quote(p))
         resp, he = open_url(url)
         if resp.status == 200:
             inner = he.find_class('inner')[0]
