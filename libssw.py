@@ -2984,8 +2984,6 @@ class _InvalidPage(Exception):
 
 class _GetActName:
     """名前の取得"""
-    _re_actname1 = _re.compile(r'[)）][(（]')
-    _re_actname2 = _re.compile(r'[（(、]')
 
     def __call__(self, elems):
         try:
@@ -2993,19 +2991,17 @@ class _GetActName:
         except AttributeError:
             raise _InvalidPage
 
-        # 複数の女優名チェク ('）（' で分割を試みる)
-        named = self._re_actname1.split(data)
-
-        if len(named) == 1:
-            # 分割されなかったら名前は1つのみ
-            named = re_inbracket.split(data)
-
-        yomis = elems.find_class('c-tx-actressName__ruby')[0].text.strip()
+        # 名前と読みに分割
+        actInfo = data.split('(')
 
         # 名前を分割
-        name = self._re_actname2.split(named[0])
-        # よみを分割
-        yomi = self._re_actname2.split(yomis.rstrip('）)'))
+        name = actInfo[0].replace('）', '').split('（')
+
+        if len(actInfo) == 1:
+            # 分割されなかったら読みは不要
+            yomi = ['']
+        else:
+            yomi = [actInfo[1].replace(')', '')]
 
         # 現在の名前の格納
         self.current = name[0]
