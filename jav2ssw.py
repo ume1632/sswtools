@@ -305,14 +305,16 @@ def fc2Parser(soup, summ):
     summ['pid'] = sp_url[4]
 
     # タイトル取得
-    headerInfo = soup.find('div', class_='items_article_headerInfo')
-    summ['title'] = headerInfo.h3.text
+    MainitemThumb = soup.find('div', class_='items_article_MainitemThumb')
+    summ['title'] = MainitemThumb.span.img['title']
 
     # リリース日取得
-    Releasedate = headerInfo.find('div', class_='items_article_Releasedate').text.split(' ')
-    summ['release'] = Releasedate[-1]
+    softDevice = soup.find_all('div', class_='items_article_softDevice')
+    Releasedate = softDevice[1].p.text
+    summ['release'] = Releasedate.split(' : ')[-1]
 
     # 販売者設定
+    headerInfo = soup.find('div', class_='items_article_headerInfo')
     for li in headerInfo.ul.find_all('li'):
         tmp = li.text.strip()
         if tmp.startswith('by'):
