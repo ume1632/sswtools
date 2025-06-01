@@ -704,10 +704,6 @@ def _format_wikitext_a(summ, anum, astr, service):
 
 def _format_wikitext_t(summ, astr, dstr, dir_col, add_column, retrieval):
     """ウィキテキストの作成 table形式"""
-    if summ['label'] == 'SOD女子社員':
-        # SOD女子社員シリーズ個別対応
-        return _format_wikitext_t_shyn(summ, astr)
-
     wtext = ''
 
     # 品番
