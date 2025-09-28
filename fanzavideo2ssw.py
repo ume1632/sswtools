@@ -7,12 +7,9 @@ import bs4
 import argparse
 import libssw as _libssw
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
 from collections import namedtuple as _namedtuple
 
 _ReturnVal = _namedtuple('ReturnVal',
@@ -80,11 +77,11 @@ def _get_args(argv, p_args):
 
 # htmlの取得
 def decode_chrome(url):
-    options = Options()
+    options = webdriver.ChromeOptions()
     options.add_argument("--headless")
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    driver = webdriver.Chrome(options=options)
 
     try:
         driver.get("https://www.dmm.co.jp/age_check/=/declared=yes/?rurl="+url)
@@ -95,7 +92,6 @@ def decode_chrome(url):
 
         # JavaScript 実行後のHTMLを取得
         html = driver.page_source
-        #print(html)
 
     finally:
         driver.quit()
