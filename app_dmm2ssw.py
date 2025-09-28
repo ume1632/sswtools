@@ -11,7 +11,9 @@ import urllib.parse as _up
 import libssw as _libssw
 import dmm2ssw as _dmm2ssw
 import jav2ssw as _jav2ssw
+import fanzavideo2ssw as _fanzavideo2ssw
 
+from itertools import chain as _chain
 from tkinter import ttk
 
 re_inbracket = re.compile(r'[(（]')
@@ -51,7 +53,16 @@ def open_wiki(*pages):
 
 def button1_action():
     props=_libssw.Summary()
-    props['url'] = txtUrl.get()
+
+    tmpUrl = txtUrl.get()
+    # 旧FANZA動画URLの変換
+    if ('www.dmm.co.jp/digital/videoc/' in tmpUrl):
+        cid = _libssw.get_id(tmpUrl, True)[0]
+        tmpUrl = 'https://video.dmm.co.jp/amateur/content/?id=' + cid
+    if ('www.dmm.co.jp/digital/videoa/' in tmpUrl):
+        cid = _libssw.get_id(tmpUrl, True)[0]
+        tmpUrl = 'https://video.dmm.co.jp/av/content/?id=' + cid
+    props['url'] = tmpUrl
 
     if props['url']:
         # テキストクリア
@@ -60,6 +71,12 @@ def button1_action():
         # ボタン無効化
         button3['state'] = tk.DISABLED
         button5['state'] = tk.DISABLED
+
+        # 女優名指定
+        actress = inpAct.get()
+        if actress:
+            actiter = _chain.from_iterable(map(_libssw.re_delim.split, [actress]))
+            props['actress'] = list(_libssw.parse_names(actiter))
 
         # オプション引数設定
         args = argparse.Namespace()
@@ -74,7 +91,8 @@ def button1_action():
             args.fastest = True
 
         # Fanza判定
-        isFanza = ('dmm.co.jp' in props['url'])
+        isFanza = ('www.dmm.co.jp' in props['url'])
+        isFanzaVideo = ('video.dmm.co.jp' in props['url'])
 
         if isFanza:
             if ('?' in props['url']):
@@ -82,6 +100,11 @@ def button1_action():
                 props['url'] = urll[0]
             _libssw.clear_cache()
             b, status, data = _dmm2ssw.main(props, args)
+        elif isFanzaVideo:
+            if ('&' in props['url']):
+                urll = props['url'].split('&')
+                props['url'] = urll[0]
+            b, data = _fanzavideo2ssw.main(props, args)
         else:
             b, data = _jav2ssw.main(props, args)
 
@@ -199,11 +222,11 @@ inpLabel.pack(padx = 10, side = tk.LEFT)
 
 # Label 3
 label3 = tk.Label(f2, text='女優設定(任意)')
-#label3.pack(padx = 10, side = tk.LEFT)
+label3.pack(padx = 10, side = tk.LEFT)
 
 # 女優入力ボックス
 inpAct = tk.Entry(f2, width=25)
-#inpAct.pack(padx = 10, side = tk.LEFT)
+inpAct.pack(padx = 10, side = tk.LEFT)
 f2.pack(padx = 10, pady = 5, side = tk.TOP, anchor = tk.NW)
 
 # 作成ページ選択
