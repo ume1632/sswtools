@@ -1693,12 +1693,6 @@ class DMMParser:
             else:
                 self._sm['series'] = _fix_ngword(getnext_text(prop, 'a')[0])
 
-            # 独自ページ個別対応
-            # ・SOD女子社員
-            if self._sm['series'] == 'SOD女子社員':
-                self._sm['series'] += ('シリーズ' +
-                                       self._sm['release'].split('/', 1)[0])
-
             self._sm['series_id'] = srid
 
             # 他のサービスを強制チェック
@@ -1755,21 +1749,6 @@ class DMMParser:
             if self._filter_pid_s and not self._filter_pid_s.search(
                     self._sm['pid']):
                 raise OmitTitleException('pid filtered', self._sm['pid'])
-
-        # 動画用
-        elif tag == '名前：':
-            # 素人動画のタイトルは後でページタイトルと年齢をくっつける
-            try:
-                age = self._re_age.findall(getnext_text(prop))[0]
-            except IndexError:
-                age = ''
-            self._sm['subtitle'] = age
-            _verbose('ama subtitle(age): ', self._sm['subtitle'])
-
-        elif tag == 'サイズ：':
-            self._sm['size'] = getnext_text(prop)
-            self._sm['size'] = self._sm['size'].replace('W-- H', '').replace('T--- ', '').replace('B-- ', '').rstrip()
-            _verbose('ama size: ', self._sm['size'])
 
         return
 
@@ -2926,10 +2905,8 @@ _sub_pid_indv = (
     (_re.compile(r'^(?:h_102)?bnsps(\d+).*'), r'nsps-\1'),  # ながえスタイルのセル版の一部
     (_re.compile(r'^21psd(\d+)'), r'psd+\1'),               # アウダースの一部
     (_re.compile(r'^\d*d1clymax00(\d+)'), r'd1clymax-\1'),  # D1グランプリ
-    (_re.compile(r'^13dsvr0(\d+)'), r'3dsvr-\1'),           # SOD VRレーベル
     (_re.compile(r'^h_094ktra(\d+)e'), r'ktra-\1e'),        # ケー・トライブの一部
     (_re.compile(r'^n_709m([a-z])r([a-z]{2})(\d{3})'), r'm\1r-\2\3'),   # スパイスビジュアルの一部
-    (_re.compile(r'^(?:[hn]_)?\d*([a-z]+)vr00(\d{3})'), r'\1vr-\2'),    # VR作品
 )
 
 
