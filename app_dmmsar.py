@@ -125,8 +125,8 @@ radio10 = tk.Radiobutton(f2, text = '素人動画',    variable = Service, value
 
 radio7.pack(padx=10, side = tk.LEFT)
 radio8.pack(padx=20, side = tk.LEFT)
-radio9.pack(padx=20, side = tk.LEFT)
-radio10.pack(padx=20, side = tk.LEFT)
+#radio9.pack(padx=20, side = tk.LEFT)
+#radio10.pack(padx=20, side = tk.LEFT)
 
 f2.pack(padx = 10, pady = 5, side = tk.TOP, anchor = tk.NW)
 

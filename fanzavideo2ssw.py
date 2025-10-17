@@ -115,10 +115,10 @@ def fanzaVideoParser(soup, summ, service):
     for tr in trs:
         span = tr.find_all('span')
         inlineFlex = span[0].text
-        if inlineFlex == '配信開始日：':
+        if (inlineFlex == '配信開始日：') and (service == 'ama'):
             summ['release'] = span[1].text
-        elif inlineFlex == '名前：':
-            summ['subtitle'] = span[1].text
+        if inlineFlex == '商品発売日：':
+            summ['release'] = span[1].text
         elif inlineFlex == 'サイズ：':
             size = span[1].text
             re_size = re.compile(r'[TBWH]-+ *')
@@ -129,11 +129,15 @@ def fanzaVideoParser(soup, summ, service):
                plist.append(act.string)
             summ['actress'] = [(p.strip(), '', '') for p in plist]
         elif inlineFlex == 'シリーズ：':
-            summ['series'] = span[1].text
+            series = span[1].text
+            if (series != '----'):
+                summ['series'] = series
         elif inlineFlex == 'メーカー：':
             summ['maker'] = span[1].text
         elif inlineFlex == 'レーベル：':
-            summ['label'] = span[1].text
+            label = span[1].text
+            if (label != '----'):
+                summ['label'] = label
         elif inlineFlex == '配信品番：':
             summ['cid'] = span[1].text
         elif inlineFlex == 'メーカー品番：':
@@ -141,12 +145,17 @@ def fanzaVideoParser(soup, summ, service):
 
     # イメージ設定
     baseUrl = 'https://pics.dmm.co.jp/digital'
-    if (service == 'ama'):
+    if service == 'ama':
         summ['image_sm'] = "{0}/amateur/{1}/{1}js.jpg".format(baseUrl, summ['cid'])
         summ['image_lg'] = "{0}/amateur/{1}/{1}jp.jpg".format(baseUrl, summ['cid'])
     else:
         summ['image_sm'] = "{0}/video/{1}/{1}ps.jpg".format(baseUrl, summ['cid'])
         summ['image_lg'] = "{0}/video/{1}/{1}pl.jpg".format(baseUrl, summ['cid'])
+
+    # 素人動画の時のタイトル/副題の再作成
+    if service == 'ama':
+        summ['title'] = summ['subtitle'] = \
+                        summ['title'] + summ['subtitle']
 
 
 def FanzaFormat_a(summ, anum, astr, service):
@@ -166,7 +175,6 @@ def FanzaFormat_a(summ, anum, astr, service):
     else:
         # レーベルの並記
         maker = summ['maker'].split('（')[0]
-        #add_label = _add_label(summ['label'])
         add_label = summ['label']
         if add_label and (not '/' in summ['maker']) and (maker != add_label):
             maker += '／{0}'.format(add_label)
@@ -265,12 +273,17 @@ def main(props=_libssw.Summary(), p_args = argparse.Namespace):
     retrieval = ''
     add_column = ''
 
-    # レーベル一覧へのリンク情報の設定
     if args.check_listpage:
+        # レーベル一覧へのリンク情報の設定
         if summ['pid'] and summ['label'] and (not summ['link_label']):
             actuall = _libssw.check_actuallpage(summ['url'], summ['label'], 'レーベル', summ['pid'])
             if actuall:
                 summ['link_label'] = actuall
+
+        if summ['pid'] and summ['series'] and (summ['series'] != summ['label']):
+            actuall = _libssw.check_actuallpage(summ['url'], summ['series'], 'シリーズ', summ['pid'])
+            if actuall:
+                summ['link_series'] = actuall
 
     # 出演者文字列の作成
     pfmrslk = ()
