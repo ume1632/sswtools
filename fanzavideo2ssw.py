@@ -119,6 +119,15 @@ def fanzaVideoParser(soup, summ, service):
             summ['release'] = span[1].text
         if inlineFlex == '商品発売日：':
             summ['release'] = span[1].text
+        elif inlineFlex == '名前：':
+            _re_age = re.compile(r'(\(\d+?\))$')
+            name = span[1].text
+            # 素人動画のタイトルは後でページタイトルと年齢をくっつける
+            try:
+                age = _re_age.findall(name)[0]
+            except IndexError:
+                age = ''
+            summ['subtitle'] = age
         elif inlineFlex == 'サイズ：':
             size = span[1].text
             re_size = re.compile(r'[TBWH]-+ *')
