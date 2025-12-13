@@ -18,6 +18,13 @@ _ReturnVal = _namedtuple('ReturnVal',
                           'actress', 'link_label', 'link_series',
                           'wktxt_a', 'wktxt_t'))
 
+# 女優名の調整
+def _trim_name(name):
+    re_inbracket = re.compile(r'[(（]')
+    name = name.strip()
+    name = re_inbracket.split(name)[0]
+    return name
+
 # コマンドライン引数の解釈
 def _get_args(argv, p_args):
     argparser = argparse.ArgumentParser(
@@ -133,10 +140,11 @@ def fanzaVideoParser(soup, summ, service):
             re_size = re.compile(r'[TBWH]-+ *')
             summ['size'] = re_size.sub('', size).rstrip()
         elif inlineFlex == '出演者：':
-            actress = span[1].find_all('a')
-            for act in actress:
-               plist.append(act.string)
-            summ['actress'] = [(p.strip(), '', '') for p in plist]
+            if not summ['actress']:
+                actress = span[1].find_all('a')
+                for act in actress:
+                   plist.append(act.string)
+                summ['actress'] = [(_trim_name(p), '', '') for p in plist]
         elif inlineFlex == 'シリーズ：':
             series = span[1].text
             if (series != '----'):
