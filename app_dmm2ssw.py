@@ -183,11 +183,17 @@ def enter_url(event):
 
 # 右クリックメニュー表示
 def show_popup(event):
-    menuPop.post(event.x_root, event.y_root)
+    global current_widget
+    current_widget = event.widget
+    menuPop.tk_popup(event.x_root, event.y_root)
 
 # クリップボード貼り付け
-def paste_url():
-    txtUrl.insert(tk.END, root.clipboard_get())
+def paste_clipboard():
+    try:
+        text = root.clipboard_get()
+        current_widget.insert(tk.INSERT, text)
+    except tk.TclError:
+        pass  # クリップボードが空などの場合
 
 #-----------------------------------------------
 # Main
@@ -197,7 +203,7 @@ root.title(u'素人系総合Wiki 編集ツール Dmm2Ssw')
 root.geometry('640x560')
 
 menuPop = tk.Menu(root, tearoff=False)
-menuPop.add_cascade(label='貼り付け', command=paste_url)
+menuPop.add_command(label='貼り付け', command=paste_clipboard)
 
 # Label 1
 f1 = tk.Frame(root)
@@ -219,6 +225,7 @@ label2.pack(padx = 10, side = tk.LEFT)
 # レーベル入力ボックス
 inpLabel = tk.Entry(f2, width=25)
 inpLabel.pack(padx = 10, side = tk.LEFT)
+inpLabel.bind('<Button-3>',show_popup)
 
 # Label 3
 label3 = tk.Label(f2, text='女優設定(任意)')
@@ -227,6 +234,7 @@ label3.pack(padx = 10, side = tk.LEFT)
 # 女優入力ボックス
 inpAct = tk.Entry(f2, width=25)
 inpAct.pack(padx = 10, side = tk.LEFT)
+inpAct.bind('<Button-3>',show_popup)
 f2.pack(padx = 10, pady = 5, side = tk.TOP, anchor = tk.NW)
 
 # 作成ページ選択
