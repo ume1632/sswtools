@@ -95,6 +95,16 @@ def _get_args(argv, p_args):
                            nargs='?',
                            metavar='URL')
 
+    argparser.add_argument('-a', '--actress',
+                           help='出演者',
+                           nargs='+',
+                           default=())
+
+    argparser.add_argument('-n', '--number',
+                           help='未知の出演者がいる場合の総出演者数 (… ほか計NUMBER名)',
+                           type=int,
+                           default=0)
+
     argparser.add_argument('-t', '--table',
                            help='一覧ページ用の表形式ウィキテキストを作成する, 2個以上指定すると両方作成する',
                            action='count',
@@ -143,6 +153,10 @@ def mgsParser(soup, summ):
 #----------------------------
 def mgsProductParser(soup, summ):
     common_detail_cover = soup.find('div', class_='common_detail_cover')
+
+    if common_detail_cover is None:
+        return
+
     detail_data = common_detail_cover.find('div', class_='detail_left').find('div', class_='detail_data')
 
     # タイトル取得
@@ -223,20 +237,6 @@ def mgsProductParser(soup, summ):
             else:
                 summ['label'] = titles[0] + 'その他'
 
-    # レーベルリンク
-    if summ['maker'] != '' and summ['media'] != 'DVD動画' and summ['pid'] != '' and summ['maker'] != 'ナンパTV' and summ['maker'] != 'プレステージプレミアム(PRESTIGE PREMIUM)':
-        actuall = _libssw.check_actuallpage(summ['url'], summ['maker'], 'レーベル', summ['pid'])
-        if actuall:
-            summ['link_label'] = actuall
-
-    if summ['label'] != '' and summ['label'] != summ['maker']:
-        if summ['pid'] != '':
-            actuall = _libssw.check_actuallpage(summ['url'], summ['label'], 'レーベル', summ['pid'])
-            if actuall:
-                summ['link_label'] = actuall
-        else:
-            summ['link_label'] = actuall
-
     # シリーズリンク
     if summ['series'] in MGS_SERIES:
         summ['link_series'] = MGS_SERIES.get(summ['series'])
@@ -283,18 +283,6 @@ def mgsMonthlyParser(soup, summ):
         summ['maker'] = 'シロウトTV'
     elif 'nanpatv' in summ['url']:
         summ['maker'] = 'ナンパＴＶ'
-
-    # レーベルリンク
-    if summ['pid'] != '' and summ['maker'] != '':
-        actuall = _libssw.check_actuallpage(summ['url'], summ['maker'], 'レーベル', summ['pid'])
-        if actuall:
-            summ['link_label'] = actuall
-
-    # シリーズリンク
-    if summ['series'] != '' and summ['maker'] != summ['series']:
-        actuall = _libssw.check_actuallpage(summ['url'], summ['series'], 'シリーズ', summ['pid'])
-        if actuall:
-            summ['link_series'] = actuall
 
 #----------------------------
 # FC2
@@ -896,8 +884,16 @@ def mgsFormat_t(summ):
                 wtext += '／[[{0}]]'.format(act[0])
         wtext += '|{0}||\n'.format(date)
     else:
-        wtext += '{0}~~{1}|[[ ]]|{2}|'.format(summ['title'], summ['subtitle'], date) if summ['subtitle'] \
-            else '{0}|[[ ]]|{1}|'.format(summ['title'], date)
+        # 出演者文字列の作成
+        if summ['actress']:
+            pfmrsstr, pnum = _libssw.stringize_performers(summ['actress'],
+                                                          summ['number'],
+                                                          False)
+        else:
+            pfmrsstr, pnum = '[[ ]]', 0
+
+        wtext += '{0}~~{1}|{2}|{3}|'.format(summ['title'], summ['subtitle'], pfmrsstr, date) if summ['subtitle'] \
+            else '{0}|{1}|{2}|'.format(summ['title'], pfmrsstr, date)
 
         wtext += '[[シリーズ一覧>{0}]]|\n'.format(summ['link_series']) if summ['link_series'] and summ['maker'] != 'シロウトTV' \
             else '|\n'
@@ -1168,7 +1164,7 @@ def mgsFormat_a(summ):
     wtext += "]]"
 
     # レーベルリンク
-    if summ['maker'] != '' and summ['media'] != 'DVD動画' and summ['pid'] != '' and summ['maker'] != 'ナンパTV' and summ['maker'] != 'プレステージプレミアム(PRESTIGE PREMIUM)':
+    if summ['maker'] != '' and summ['media'] != 'DVD動画' and summ['pid'] != '' and summ['maker'] != 'ナンパTV' and summ['maker'] != 'シロウトTV' and summ['maker'] != 'DOC' and summ['maker'] != 'プレステージプレミアム(PRESTIGE PREMIUM)':
         actuall = _libssw.check_actuallpage(summ['url'], summ['maker'], 'レーベル', summ['pid'])
         if actuall:
             wtext += "　[[(レーベル一覧)>{0}]]".format(actuall)
@@ -1709,6 +1705,10 @@ def main(props=_libssw.Summary(), p_args = argparse.Namespace):
 
     # 作品情報
     summ = _libssw.Summary()
+
+    if __name__ != '__main__':
+        summ.update(props)
+
     summ['url'] = reqUrl
     output = ['']
     site = getSite(reqUrl)
