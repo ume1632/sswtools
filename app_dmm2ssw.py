@@ -195,6 +195,7 @@ def paste_clipboard():
     except tk.TclError:
         pass  # クリップボードが空などの場合
 
+:
 #-----------------------------------------------
 # Main
 #-----------------------------------------------
@@ -203,7 +204,9 @@ root.title(u'素人系総合Wiki 編集ツール Dmm2Ssw')
 root.geometry('640x560')
 
 menuPop = tk.Menu(root, tearoff=False)
+menuPop.add_command(label='切り取り', command=cut_text)
 menuPop.add_command(label='貼り付け', command=paste_clipboard)
+menuPop.add_command(label='削除', command=delete_text)
 
 # Label 1
 f1 = tk.Frame(root)
@@ -289,6 +292,7 @@ label5.pack(padx = 20, pady = 5, side = tk.TOP, anchor = tk.NW)
 # 一覧ページ出力
 txtList = tk.Text(height=6, width=80)
 txtList.pack(padx = 10, side = tk.TOP, anchor = tk.NW)
+txtList.bind('<Button-3>',show_popup)
 
 # Wiki編集ボタン 1
 f6 = tk.Frame(root)
@@ -307,6 +311,7 @@ label6.pack(padx = 20, pady = 5, side = tk.TOP, anchor = tk.NW)
 # 女優ページ出力
 txtAct = tk.Text(height=6, width=80)
 txtAct.pack(padx = 10, side = tk.TOP, anchor = tk.NW)
+txtAct.bind('<Button-3>',show_popup)
 
 # Wiki編集ボタン 2
 f7 = tk.Frame(root)
