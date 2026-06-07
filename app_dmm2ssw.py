@@ -195,7 +195,22 @@ def paste_clipboard():
     except tk.TclError:
         pass  # クリップボードが空などの場合
 
-:
+# テキストを切り取り
+def cut_text():
+    try:
+        # 選択中のテキストを切り取り、クリップボードに格納
+        current_widget.event_generate("<<Cut>>")
+    except tk.TclError:
+        pass
+
+# テキストを削除
+def delete_text():
+    try:
+        current_widget.event_generate("<KeyPress-Delete>")
+    except tk.TclError:
+        # 何も選択されていない場合は何もしない
+        pass
+
 #-----------------------------------------------
 # Main
 #-----------------------------------------------
