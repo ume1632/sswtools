@@ -107,7 +107,10 @@ def decode_chrome(url):
 
 
 def fanzaVideoParser(soup, summ, service):
-    title = soup.find('meta', property='og:title')
+
+    head = soup.find('head')
+
+    title = head.find('meta', property='og:title')
     if title:
         summ['title'] = _libssw._fix_ngword(title['content'])
 
@@ -161,11 +164,11 @@ def fanzaVideoParser(soup, summ, service):
             summ['pid'] = span[1].text
 
     # イメージ設定
-    baseUrl = 'https://pics.dmm.co.jp/digital'
     if service == 'ama':
-        summ['image_sm'] = "{0}/amateur/{1}/{1}js.jpg".format(baseUrl, summ['cid'])
-        summ['image_lg'] = "{0}/amateur/{1}/{1}jp.jpg".format(baseUrl, summ['cid'])
+        image = head.find('meta', property='og:image')
+        summ['image_sm'] = image['content']
     else:
+        baseUrl = 'https://pics.dmm.co.jp/digital'
         summ['image_sm'] = "{0}/video/{1}/{1}ps.jpg".format(baseUrl, summ['cid'])
         summ['image_lg'] = "{0}/video/{1}/{1}pl.jpg".format(baseUrl, summ['cid'])
 
@@ -203,11 +206,13 @@ def FanzaFormat_a(summ, anum, astr, service):
     if summ['link_series']:
         titleline += '　[[(シリーズ一覧)>{0}]]'.format(summ['link_series'])
     wtext += titleline + '\n'
+
     # 画像
     if service == 'ama':
-        wtext += '[[&ref({0[image_lg]},147)>{0[image_lg]}]]\n'.format(summ)
+        wtext += '&ref({0[image_sm]},147)\n'.format(summ)
     else:
         wtext += '[[{0[image_sm]}>{0[image_lg]}]]\n'.format(summ)
+
     # 出演者
     if anum not in {0, 1}:
         wtext += '出演者：{0}\n'.format(astr)
@@ -219,7 +224,7 @@ def FanzaFormat_a(summ, anum, astr, service):
     return wtext
 
 
-def FanzaFormat_t(summ, astr, add_column, retrieval):
+def FanzaFormat_t(summ, astr, service, add_column, retrieval):
     """ウィキテキストの作成 table形式"""
     wtext = ''
 
@@ -228,8 +233,10 @@ def FanzaFormat_t(summ, astr, add_column, retrieval):
              else '|{0[pid]}'.format(summ)
 
     # 画像
-    wtext += '|[[{0[image_sm]}>{0[image_lg]}]]'.format(summ) if summ['url'] \
-             else '|'
+    if service == 'ama':
+        wtext += '|&ref({0[image_sm]},125)'.format(summ) if summ['url'] else '|'
+    else:
+        wtext += '|[[{0[image_sm]}>{0[image_lg]}]]'.format(summ) if summ['url'] else '|'
 
     # サブタイトル
     wtext += '|{0[subtitle]}~~{0[size]}'.format(summ) if summ['size'] \
@@ -264,7 +271,7 @@ def main(props=_libssw.Summary(), p_args = argparse.Namespace):
 
     # 作品情報
     summ = _libssw.Summary()
-    
+
     if __name__ != '__main__':
         summ.update(props)
 
@@ -303,7 +310,6 @@ def main(props=_libssw.Summary(), p_args = argparse.Namespace):
                 summ['link_series'] = actuall
 
     # 出演者文字列の作成
-    pfmrslk = ()
     if len(summ['actress']) < 2 and not summ['number'] and args.table == 0:
         # 女優ページ用のみ作成で出演者数が1人ならやらない
         pfmrsstr, pnum = '', 0
@@ -330,7 +336,7 @@ def main(props=_libssw.Summary(), p_args = argparse.Namespace):
 
     # Wikiテキスト作成
     wktxt_a = FanzaFormat_a(summ, pnum, pfmrsstr, service) if args.table != 1 else ()
-    wktxt_t = FanzaFormat_t(summ, pfmrsstr, add_column, retrieval) if args.table else ''
+    wktxt_t = FanzaFormat_t(summ, pfmrsstr, service, add_column, retrieval) if args.table else ''
 
     if __name__ != '__main__':
         # モジュール呼び出しならタプルで返す。
