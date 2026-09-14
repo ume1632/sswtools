@@ -130,14 +130,8 @@ def fanzaVideoParser(soup, summ, service):
         if inlineFlex == '商品発売日：':
             summ['release'] = span[1].text
         elif inlineFlex == '名前：':
-            _re_age = re.compile(r'(\(\d+?\))$')
-            name = span[1].text
-            # 素人動画のタイトルは後でページタイトルと年齢をくっつける
-            try:
-                age = _re_age.findall(name)[0]
-            except IndexError:
-                age = ''
-            summ['subtitle'] = age
+            name= span[1].text
+            summ['subtitle'] = name
         elif inlineFlex == 'サイズ：':
             size = span[1].text
             re_size = re.compile(r'[TBWH]-+ *')
@@ -172,10 +166,6 @@ def fanzaVideoParser(soup, summ, service):
         summ['image_sm'] = "{0}/video/{1}/{1}ps.jpg".format(baseUrl, summ['cid'])
         summ['image_lg'] = "{0}/video/{1}/{1}pl.jpg".format(baseUrl, summ['cid'])
 
-    # 素人動画の時のタイトル/副題の再作成
-    if service == 'ama':
-        summ['title'] = summ['subtitle'] = \
-                        summ['title'] + summ['subtitle']
 
 
 def FanzaFormat_a(summ, anum, astr, service):
@@ -191,7 +181,7 @@ def FanzaFormat_a(summ, anum, astr, service):
     # タイトルおよびメーカー
     if service == 'ama':
         titleline = '[[{0[label]} {0[subtitle]} {0[size]}>{0[url]}]]'.format(summ) if summ['size'] \
-        else '[[{0[label]} {0[title]}>{0[url]}]]'.format(summ)
+        else '[[{0[label]} {0[subtitle]}>{0[url]}]]'.format(summ)
     else:
         # レーベルの並記
         maker = summ['maker'].split('（')[0]
