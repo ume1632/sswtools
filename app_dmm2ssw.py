@@ -22,6 +22,8 @@ g_link_label = ''
 g_link_series = ''
 g_pid = ''
 g_actress = []
+g_service = ''
+g_title = ''
 
 def _trim_name(name):
     """女優名の調整"""
@@ -45,6 +47,24 @@ def open_wiki(*pages):
                 resp, he = _libssw.open_url(url)
             inner = he.find_class('inner')[0]
             editurl = inner.xpath('.//a')[0].get('href')
+
+            if g_service == 'ama':
+                for h4 in he.iter('h4'):
+                    h4_text = ''.join(h4.itertext())
+
+                    if '配信作品' in h4_text:
+                        a_elem = h4.find('a')
+                        if a_elem is not None and 'href' in a_elem.attrib:
+                            editurl = a_elem.attrib['href']
+            elif g_service == 'video' and ('【VR】' in g_title):
+                for h4 in he.iter('h4'):
+                    h4_text = ''.join(h4.itertext())
+
+                    if 'VR作品' in h4_text:
+                        a_elem = h4.find('a')
+                        if a_elem is not None and 'href' in a_elem.attrib:
+                            editurl = a_elem.attrib['href']
+
             if editurl:
                 _webbrowser.open_new_tab(editurl)
         else:
@@ -75,6 +95,7 @@ def button1_action():
         # 女優名指定
         actress = inpAct.get()
         if actress:
+            actress = actress.replace('\n','／')
             actiter = _chain.from_iterable(map(_libssw.re_delim.split, [actress]))
             props['actress'] = list(_libssw.parse_names(actiter))
 
@@ -112,6 +133,8 @@ def button1_action():
         global g_link_series
         global g_actress
         global g_pid
+        global g_service
+        global g_title
 
         if b:
 
@@ -119,6 +142,8 @@ def button1_action():
             g_link_series = data.link_series
             g_actress = data.actress
             g_pid = data.pid
+            g_service = _libssw.resolve_service(props['url'])
+            g_title = data.title
 
             # 結果を反映
             if data.wktxt_t:
@@ -141,6 +166,8 @@ def button1_action():
             g_link_series = ''
             g_actress = []
             g_pid = ''
+            g_service = ''
+            g_title = ''
             label7.config(text='取得失敗')
 
 # クリア
@@ -195,7 +222,22 @@ def paste_clipboard():
     except tk.TclError:
         pass  # クリップボードが空などの場合
 
-:
+# テキストを切り取り
+def cut_text():
+    try:
+        # 選択中のテキストを切り取り、クリップボードに格納
+        current_widget.event_generate("<<Cut>>")
+    except tk.TclError:
+        pass
+
+# テキストを削除
+def delete_text():
+    try:
+        current_widget.event_generate("<KeyPress-Delete>")
+    except tk.TclError:
+        # 何も選択されていない場合は何もしない
+        pass
+
 #-----------------------------------------------
 # Main
 #-----------------------------------------------

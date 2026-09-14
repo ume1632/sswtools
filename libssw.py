@@ -57,10 +57,11 @@ RETLABEL = {'series': 'シリーズ',
 
 _BASEURL_DMM = 'https://www.dmm.co.jp'
 
-_SVC_URL = {'https://www.dmm.co.jp/mono/dvd/':       'dvd',
-            'https://www.dmm.co.jp/rental/':         'rental',
-            'https://www.dmm.co.jp/digital/videoa/': 'video',
-            'https://www.dmm.co.jp/digital/videoc/': 'ama'}
+_SVC_URL = {'https://www.dmm.co.jp/mono/dvd/':          'dvd',
+            'https://www.dmm.co.jp/rental/':            'rental',
+            'https://video.dmm.co.jp/av/content/':      'video',
+            'https://video.dmm.co.jp/amateur/content/': 'ama'}
+
 
 _SERVICEDIC = {
     'dvd':    'mono/dvd',
@@ -1093,7 +1094,7 @@ open_url = __OpenUrl()
 
 
 _tt_knum = str.maketrans('一二三四五六七八九〇壱弐参伍', '12345678901235')
-_re_ksuji = _re.compile('[十拾百千万億兆〇\d]+')
+_re_ksuji = _re.compile(r'[十拾百千万億兆〇\d]+')
 _re_kunit = _re.compile(r'[十拾百千]|\d+')
 _re_manshin = _re.compile(r'[万億兆]|[^万億兆]+')
 
@@ -2848,15 +2849,21 @@ def stringize_performers(pfmrs, number, follow):
     return pfmrsstr, pnum
 
 
-_re_base_url = _re.compile(r'https?://(.*/)-/')
-
+_re_base_url = _re.compile(r'https?://([^?]+?)(?:-/|\?|$)')
 
 def resolve_service(url):
     """サービスの決定"""
     _verbose('Resolving service...')
-    base = "https://" + _re_base_url.findall(url)[0]
 
-    if not base or base not in _SVC_URL:
+    match = _re_base_url.findall(url)
+
+    if not match:
+        _emsg('E', '未サポートのURLです。')
+        return None
+
+    base = "https://" + match[0]
+
+    if base not in _SVC_URL:
         _emsg('E', '未サポートのURLです。')
     else:
         return _SVC_URL[base]
