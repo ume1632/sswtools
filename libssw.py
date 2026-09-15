@@ -2858,13 +2858,12 @@ def resolve_service(url):
     match = _re_base_url.findall(url)
 
     if not match:
-        _emsg('E', '未サポートのURLです。')
-        return None
+        return ''
 
     base = "https://" + match[0]
 
     if base not in _SVC_URL:
-        _emsg('E', '未サポートのURLです。')
+        return ''
     else:
         return _SVC_URL[base]
 
