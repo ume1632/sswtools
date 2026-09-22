@@ -443,6 +443,7 @@ from collections import OrderedDict, namedtuple
 
 import libssw
 import dmm2ssw
+import fanzavideo2ssw
 
 __version__ = 20151010
 
@@ -1368,8 +1369,13 @@ def main(argv=None):
             libssw.inprogress('(残り {} 件/全 {} 件: 除外 {} 件)  '.format(
                 rest, total, omitted))
 
-            verbose('Call dmm2ssw')
-            b, status, data = dmm2ssw.main(props, args, dmmparser)
+            if args.service == 'dvd' or args.service == 'rental':
+                verbose('Call dmm2ssw')
+                b, status, data = dmm2ssw.main(props, args, dmmparser)
+            else:
+                verbose('Call fanzavideo2ssw')
+                b, status, data = fanzavideo2ssw.main(props, args, dmmparser)
+
             # 返り値:
             # b -> Bool
             # status -> url if b else http.status or 'Omitted'
