@@ -6,6 +6,7 @@ import httplib2
 import bs4
 import argparse
 import libssw as _libssw
+from urllib.parse import parse_qs, urlparse
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -14,9 +15,22 @@ from collections import namedtuple as _namedtuple
 
 _ReturnVal = _namedtuple('ReturnVal',
                          ('release', 'pid', 'title', 'title_dmm', 'url',
-                          'time', 'maker', 'label', 'series',
+                          'media', 'maker', 'label', 'series',
                           'actress', 'link_label', 'link_series',
                           'wktxt_a', 'wktxt_t'))
+
+# 品番生成
+def gen_pid(url):
+    parsed_url = urlparse(url)
+    params = parse_qs(parsed_url.query)
+    cid = params.get('id', [None])[0]
+    pid, m = _libssw.sub(_libssw._sub_pid, cid, True)
+
+    if m:
+        pid = pid.upper()
+
+    return pid, cid
+
 
 # 女優名の調整
 def _trim_name(name):
@@ -117,6 +131,17 @@ def fanzaVideoParser(soup, summ, service):
     flex = soup.find('div', class_='flex relative')
     flex4 = flex.find('div', class_='flex flex-col gap-4')
 
+    if flex4 is None:
+        summ['pid'], summ['cid'] = gen_pid(summ['url'])
+        if service == 'ama':
+            summ['image_sm'] = "https://awsimgsrc.dmm.co.jp/pics_dig/digital/amateur/{0}/{0}jp.jpg".format(summ['cid'])
+        else:
+            baseUrl = 'https://pics.dmm.co.jp/digital'
+            summ['image_sm'] = "{0}/video/{1}/{1}ps.jpg".format(baseUrl, summ['cid'])
+            summ['image_lg'] = "{0}/video/{1}/{1}pl.jpg".format(baseUrl, summ['cid'])
+
+        return httplib2.Response({"status": "404"})
+
     table = flex4.find('table', class_='text-xs shrink table-fixed')
     trs = table.find_all('tr')
 
@@ -130,14 +155,8 @@ def fanzaVideoParser(soup, summ, service):
         if inlineFlex == '商品発売日：':
             summ['release'] = span[1].text
         elif inlineFlex == '名前：':
-            _re_age = re.compile(r'(\(\d+?\))$')
-            name = span[1].text
-            # 素人動画のタイトルは後でページタイトルと年齢をくっつける
-            try:
-                age = _re_age.findall(name)[0]
-            except IndexError:
-                age = ''
-            summ['subtitle'] = age
+            name= span[1].text
+            summ['subtitle'] = name
         elif inlineFlex == 'サイズ：':
             size = span[1].text
             re_size = re.compile(r'[TBWH]-+ *')
@@ -172,10 +191,29 @@ def fanzaVideoParser(soup, summ, service):
         summ['image_sm'] = "{0}/video/{1}/{1}ps.jpg".format(baseUrl, summ['cid'])
         summ['image_lg'] = "{0}/video/{1}/{1}pl.jpg".format(baseUrl, summ['cid'])
 
-    # 素人動画の時のタイトル/副題の再作成
+    # メディア設定
     if service == 'ama':
-        summ['title'] = summ['subtitle'] = \
-                        summ['title'] + summ['subtitle']
+        summ['media'] = '素人動画'
+    elif summ['title'].startswith('【VR】'):
+        summ['media'] = 'VR動画'
+
+    if not plist:
+        id = summ['url'].split('?id=')[1]
+        searchUrl = 'https://shiroutowiki.work/fanza-amateur/' + id + '/'
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
+        h = httplib2.Http('.cache')
+        response, content = h.request(searchUrl, method="GET", headers=headers)
+        html = content.decode('utf-8', 'ignore')
+
+        s = bs4.BeautifulSoup(html, 'html.parser')
+        faq_a = s.find('dd', class_='faq_a')
+        if faq_a:
+            plist = faq_a.text.split(' | ')
+            summ['actress'] = [(_trim_name(p), '', '') for p in plist]
+
+    return httplib2.Response({"status": "200"})
 
 
 def FanzaFormat_a(summ, anum, astr, service):
@@ -191,7 +229,7 @@ def FanzaFormat_a(summ, anum, astr, service):
     # タイトルおよびメーカー
     if service == 'ama':
         titleline = '[[{0[label]} {0[subtitle]} {0[size]}>{0[url]}]]'.format(summ) if summ['size'] \
-        else '[[{0[label]} {0[title]}>{0[url]}]]'.format(summ)
+        else '[[{0[label]} {0[subtitle]}>{0[url]}]]'.format(summ)
     else:
         # レーベルの並記
         maker = summ['maker'].split('（')[0]
@@ -264,7 +302,7 @@ def FanzaFormat_t(summ, astr, service, add_column, retrieval):
     return wtext
 
 
-def main(props=_libssw.Summary(), p_args = argparse.Namespace):
+def main(props=_libssw.Summary(), p_args = argparse.Namespace, dmmparser=None):
     argv = [props.url] if __name__ != '__main__' else sys.argv[1:]
     args = _get_args(argv, p_args)
     reqUrl = args.url
@@ -290,7 +328,7 @@ def main(props=_libssw.Summary(), p_args = argparse.Namespace):
         else:
             service = 'video'
 
-    fanzaVideoParser(s, summ, service)
+    resp = fanzaVideoParser(s, summ, service)
 
     summ['link_label'] = getattr(args, 'label')
 
@@ -340,20 +378,20 @@ def main(props=_libssw.Summary(), p_args = argparse.Namespace):
 
     if __name__ != '__main__':
         # モジュール呼び出しならタプルで返す。
-        return True, _ReturnVal(summ['release'],
-                                summ['pid'],
-                                summ['title'],
-                                summ['title_dmm'],
-                                summ['url'],
-                                summ['time'],
-                                summ('maker', 'maker_id'),
-                                summ('label', 'label_id'),
-                                summ('series', 'series_id'),
-                                summ['actress'],
-                                summ['link_label'],
-                                summ['link_series'],
-                                wktxt_a,
-                                wktxt_t)
+        return True, resp.status, _ReturnVal(summ['release'],
+                                    summ['pid'],
+                                    summ['title'],
+                                    summ['title_dmm'],
+                                    summ['url'],
+                                    summ['media'],
+                                    summ('maker', 'maker_id'),
+                                    summ('label', 'label_id'),
+                                    summ('series', 'series_id'),
+                                    summ['actress'],
+                                    summ['link_label'],
+                                    summ['link_series'],
+                                    wktxt_a,
+                                    wktxt_t)
     else:
         # 書き出す
         output = ['']

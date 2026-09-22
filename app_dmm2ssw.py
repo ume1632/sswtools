@@ -22,6 +22,8 @@ g_link_label = ''
 g_link_series = ''
 g_pid = ''
 g_actress = []
+g_media = ''
+g_title = ''
 
 def _trim_name(name):
     """女優名の調整"""
@@ -45,6 +47,27 @@ def open_wiki(*pages):
                 resp, he = _libssw.open_url(url)
             inner = he.find_class('inner')[0]
             editurl = inner.xpath('.//a')[0].get('href')
+
+            if g_media in ('素人動画', '配信専用動画'):
+                for h4 in he.iter('h4'):
+                    h4_text = ''.join(h4.itertext())
+
+                    if '配信作品' in h4_text:
+                        a_elem = h4.find('a')
+                        if a_elem is not None and 'href' in a_elem.attrib:
+                            editurl = a_elem.attrib['href']
+                            break;
+
+            elif g_media == 'VR動画':
+                for h4 in he.iter('h4'):
+                    h4_text = ''.join(h4.itertext())
+
+                    if 'VR作品' in h4_text:
+                        a_elem = h4.find('a')
+                        if a_elem is not None and 'href' in a_elem.attrib:
+                            editurl = a_elem.attrib['href']
+                            break;
+
             if editurl:
                 _webbrowser.open_new_tab(editurl)
         else:
@@ -75,6 +98,7 @@ def button1_action():
         # 女優名指定
         actress = inpAct.get()
         if actress:
+            actress = actress.replace('\n','／')
             actiter = _chain.from_iterable(map(_libssw.re_delim.split, [actress]))
             props['actress'] = list(_libssw.parse_names(actiter))
 
@@ -104,7 +128,7 @@ def button1_action():
             if ('&' in props['url']):
                 urll = props['url'].split('&')
                 props['url'] = urll[0]
-            b, data = _fanzavideo2ssw.main(props, args)
+            b, status, data = _fanzavideo2ssw.main(props, args)
         else:
             b, data = _jav2ssw.main(props, args)
 
@@ -112,6 +136,8 @@ def button1_action():
         global g_link_series
         global g_actress
         global g_pid
+        global g_media
+        global g_title
 
         if b:
 
@@ -119,6 +145,8 @@ def button1_action():
             g_link_series = data.link_series
             g_actress = data.actress
             g_pid = data.pid
+            g_media = data.media
+            g_title = data.title
 
             # 結果を反映
             if data.wktxt_t:
@@ -141,6 +169,8 @@ def button1_action():
             g_link_series = ''
             g_actress = []
             g_pid = ''
+            g_media = ''
+            g_title = ''
             label7.config(text='取得失敗')
 
 # クリア
