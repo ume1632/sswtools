@@ -62,6 +62,12 @@ _SVC_URL = {'https://www.dmm.co.jp/mono/dvd/':          'dvd',
             'https://video.dmm.co.jp/av/content/':      'video',
             'https://video.dmm.co.jp/amateur/content/': 'ama'}
 
+_BASEURL_FANZA = {
+    'dvd':    'https://www.dmm.co.jp/mono/dvd/-/detail/=/cid',
+    'rental': 'https://www.dmm.co.jp/rental/ppr/-/detail/=/cid',
+    'video':  'https://video.dmm.co.jp/av/content/?id',
+    'ama':    'https://video.dmm.co.jp/amateur/content/?id'
+}
 
 _SERVICEDIC = {
     'dvd':    'mono/dvd',
@@ -2592,15 +2598,22 @@ def ret_joindata(join_d, args):
 
 
 def join_priurls(retrieval, *keywords, service='dvd'):
-    """DMM基底URLの作成"""
-    return tuple('{}/{}/-/list/=/article={}/id={}/sort=date/'.format(
-        _BASEURL_DMM, _SERVICEDIC[service], retrieval, k) for k in keywords)
-
+    """FANZA基底URLの作成"""
+    if service == 'dvd' or service == 'rental':
+        return tuple('{}/{}/-/list/=/article={}/id={}/sort=date/'.format(
+            _BASEURL_DMM, _SERVICEDIC[service], retrieval, k) for k in keywords)
+    elif service == 'ama':
+        return tuple('https://video.dmm.co.jp/amateur/list/?{}={}&sort=date'.format(
+            retrieval, k) for k in keywords)
 
 def build_produrl(service, cid):
-    """DMM作品ページのURL作成"""
-    return '{}/{}/-/detail/=/cid={}/'.format(
-        _BASEURL_DMM, _SERVICEDIC[service], cid)
+    """FANZA作品ページのURL作成"""
+    if service == 'dvd' or service == 'rental':
+        end = '/'
+    else:
+        end = ''
+
+    return '{}={}{}'.format(_BASEURL_FANZA[service], cid, end)
 
 
 def getnext_text(elem, xpath=False):

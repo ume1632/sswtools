@@ -253,7 +253,7 @@ def FanzaFormat_t(summ, astr, service, add_column, retrieval):
     return wtext
 
 
-def main(props=_libssw.Summary(), p_args = argparse.Namespace):
+def main(props=_libssw.Summary(), p_args = argparse.Namespace, dmmparser=None):
     argv = [props.url] if __name__ != '__main__' else sys.argv[1:]
     args = _get_args(argv, p_args)
     reqUrl = args.url
