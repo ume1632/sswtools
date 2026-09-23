@@ -178,366 +178,7 @@ _OMITGENRE = {'6014': 'イメージビデオ',
               }
 #  '6561': '限定盤'} # 特典対象
 
-# 総集編・再収録専門そうなやつ
-# メーカー
-_OMIT_MAKER = {
-    '6500': 'BACK DROP',
-    '6473': 'CHANGE',
-    '40029': 'アヴァ (レンタル)',
-}
-#   '45810': 'エクストラ'}
 
-# 収録時間が4時間以上は総集編だけそうなメーカー
-_OMIT_SUSS_4H = {
-    '1398': 'ドグマ',
-    '3784': 'エムズビデオグループ',
-    '4809': 'ミル',
-    '4835': 'TRANS CLUB',
-    '4836': 'SHEMALE a la carte',
-    '5061': 'オーロラプロジェクト・アネックス',
-    '5534': 'ABC/妄想族',
-    '5665': 'ROOKIE',
-    '5699': 'VENUS',
-    '6368': '催眠研究所別館',
-    '6413': 'フォーディメンション/エマニエル',
-    '6426': '赤い弾丸/エマニエル',
-    '6495': 'MANJIRO/エマニエル',
-    '6381': 'CREAM PIE',
-    '40006': 'ワンズファクトリー',
-    '40014': 'グローリークエスト',
-    '40018': 'ルビー',
-    '40025': 'ドリームチケット',
-    '40070': 'マルクス兄弟',
-    '40074': 'ジャネス',
-    '40077': 'AVS collector’s',
-    '40082': 'ラハイナ東海',
-    '40160': 'アテナ映像',
-    '45003': 'スタイルアート/妄想族',
-    '45016': 'センタービレッジ',
-    '45017': 'ドリームステージ',
-    '45059': 'デジタルアーク',
-    '45099': '光夜蝶',
-    '45195': '小林興業',
-    '45216': 'なでしこ',
-    '45340': 'BabyEntertainment',
-    '45371': 'ROCKET',
-    '45450': 'STAR PARADISE',
-    '45457': 'NEXT GROUP',
-    '45486': 'プリモ',
-    '45532': 'スターゲート',
-    '45700': 'バルタン',
-    '45737': 'カマタ映像',
-    '45883': 'Mellow Moon（メロウムーン）',
-    '45941': 'MGM'}
-
-# 総集編・再収録専門レーベル
-_OMIT_LABEL = {
-    '2745':  'アタッカーズ アンソロジー',
-    '6010':  'ALL IN☆ ONE',
-    '7111':  'CRYSTAL EX',
-    '9164':  'オーロラプロジェクト・EX',
-    '21231': 'DRAGON（ハヤブサ）',
-    '22721': 'バイキング',
-    '23581': 'K’S BEST',
-    '24078': 'REBORN',
-    '24230': '美少女（プレステージ）',
-    '24558': '79Au',
-    '24593': '熟肉',
-    '24808': '変態仮面',
-    '25025': 'コリーダ'}
-
-# 総集編・再収録専門シリーズ
-_OMIT_SERIES = {
-    '2935':   'BEST（作品集）',
-    '8750':   '微乳貧乳',
-    '9939':   'プレミアムベスト',
-    '9696':   'ism',
-    '72538':  '○○大全集（TMA）',
-    '77766':  '人妻の情事（なでしこ）',
-    '78841':  '100人斬り（TMA）',
-    '202979': '『無垢』特選 無垢ナ女子校生限定ソープランド 大好評記念感謝祭',
-    '204625': 'いいなりな人妻たち',
-    '205518': 'いやらしくてムッチリお尻で巨乳の人妻とHがしたい',
-    '205779': 'フェラチオSP',
-    '207233': '寸止め焦らしで大暴発スペシャル',
-    '208033': '湯あがりぺちゃぱいバスタイム',
-    '208077': '美熟女プレイ集',
-    '208374': '催眠研究',
-    '208519': '見下し丁寧淫語でございます。',
-    '209310': 'ONEDAFULL1年の軌跡全60作品',
-    '209360': '○○ism',
-    '209413': 'アウトレットDVD5枚組 1980',
-    '209887': '奥さんの体がエロいから犯されるんです！！！',
-    '210101': '○時間SPECIAL',
-    '210208': 'ママ友！増刊号 ヤリ友の輪',
-    '210925': '淫乱すぎる若妻48人の連続ドスケベSEX',
-    '210926': 'どすけべ妻のいやらしいフェラチオ',
-    '211184': 'The○○ 美熟女スペシャル',
-    '211414': '母乳厳選集',
-    '212454': '実録出版 永久不滅傑作選',
-    '212503': '極・奇譚クラブ',
-    '212638': 'SM獄窓の女たち 囚われの肉魔',
-    '213087': 'おませなJKの制服でオクチえっち！',
-    '213109': '夫の前で犯される人妻',
-    '213295': '麗しき若妻',
-    '213420': 'キレイなお姉さんのパンモロ○○コレクション',
-    '213604': 'ヌキサシバッチリ！！厳選センズリ専用ディルド＆指入れオナニー素材集',
-    '213714': '1万人のAVユーザーが選んだ○○',
-    '213840': '癒しのじゅるじゅぽフェラCOLLECTION',
-    '214749': 'この神脚、生唾ごっくん…。',
-}
-
-# 品番プレフィクス(URL上のもの)
-_OMNI_PREFIX = (
-    '118bst',         # プレステージの総集編
-    '118dcm',         # プレステージの総集編
-    '118dcx',         # プレステージの総集編
-    '118ful',         # プレステージの総集編
-    '118kmx',         # プレステージの総集編
-    '118mzq',         # プレステージの総集編
-    '118pet',         # プレステージの総集編
-    '118ppb',         # プレステージの総集編
-    '118ppt',         # プレステージの総集編
-    '118pre',         # プレステージの総集編
-    '118spa',         # プレステージの総集編
-    '118spp',         # プレステージの総集編
-    '118tgbe',        # プレステージの総集編
-    '118tre',         # プレステージの総集編
-    '118zesp',        # プレステージの総集編
-    '13box',          # グローリークエストの総集編
-    '13gqe',          # グローリークエストの総集編
-    '13qq',           # グローリークエストの総集編
-    '13rvg',          # グローリークエストの総集編
-    '13sqv',          # グローリークエストの総集編
-    '13ysr',          # グローリークエストの総集編
-    '143umd',         # グローバルメディアエンタテインメントの総集編
-    '15ald',          # 桃太郎映像出版の総集編
-    '15mofd',         # 桃太郎映像出版の総集編
-    '164sbdd',        # サイドビーの総集編レーベル クスコ
-    '164sbhe',        # サイドビーの総集編レーベル HEROINE
-    '17dbr',          # ルビーの総集編シリーズ
-    '17hrd',          # ルビーの総集編
-    '17kmk',          # ルビーの総集編シリーズ
-    '187jame',        # スタイルアートjam/妄想族の総集編
-    '187slba',        # スタイルアートLOVE BETES/妄想族の総集編
-    '18alsp',         # タカラ映像の総集編
-    '18mbox',         # タカラ映像の総集編
-    '18mght',         # タカラ映像の総集編
-    '1svomn',         # サディスティックビレッジの総集編
-    '21issd',         # アウダースジャパンの総集編
-    '21pssd',         # アウダースジャパンの総集編
-    '23aukb',         # U＆Kの総集編
-    '23uksp',         # U＆Kの総集編
-    '24hfd',          # ドリームチケットの総集編
-    '28drn',          # DRAGON（ハヤブサ） 総集編専門レーベル
-    '28gen',          # GIGA TON 総集編専門レーベル
-    '28wed',          # EIGHT MAN 総集編専門レーベル
-    '29cxaz',         # ジャネス/ladiesの総集編
-    '29cwaz',         # ジャネス/ladiesの総集編
-    '29djsh',         # ジャネスの総集編
-    '29djsj',         # ジャネスの総集編
-    '29hwaz',         # ジャネスの総集編
-    '2apao',          # オーロラプロジェクト・アネックスの総集編 (レンタル)
-    '2bdclb',         # ワープエンタテインメントの総集編
-    '2bom',           # BoinBB/ABCの総集編 (レンタル)
-    '2box',           # ワープエンタテインメントの総集編
-    '2clb',           # ワープエンタテインメントの総集編
-    '2koze',          # ローグ・プラネット（フェチ）/妄想族の総集編 (レンタル)
-    '2ptko',          # パツキン/ABCの総集編 (レンタル)
-    '2slba',          # スタイルアート/妄想族の総集編 (レンタル)
-    '2spbox',         # ワープエンタテインメントの総集編
-    '2swac',          # 湘南/妄想族の総集編 (レンタル)
-    '2tomn',          # TEPPANの総集編 (レンタル)
-    '2wpw',           # ワープエンタテインメントの総集編
-    '2wsp',           # ワープエンタテインメントの総集編
-    '2ycc',           # ワープエンタテインメントの総集編
-    '30dmbk',         # MAZO BOYS CLUB (未来フューチャー) の総集編
-    '30dsmo',         # BS (未来フューチャー) の総集編
-    '33awtb',         # AVS collector’sの総集編
-    '33avsb',         # AVS collector’sの総集編
-    '33avsw',         # AVS collector’sの総集編
-    '33nopc',         # AVS collector’sの総集編
-    '33acec',         # AVS collector’sの総集編
-    '33dphb',         # AVS collector’sの総集編
-    '33dphc',         # AVS collector’sの総集編
-    '33dpnw',         # AVS collector’sの総集編
-    '33dsfb',         # AVS collector’sの総集編
-    '33exbs',         # AVS collector’sの総集編
-    '33igub',         # AVS collector’sの総集編
-    '33ncgb',         # AVS collector’sの総集編
-    '33plzb',         # AVS collector’sの総集編
-    '33zosb',         # AVS collector’sの総集編
-    '3bmw',           # ワンズファクトリーの総集編
-    '3mmb',           # 桃太郎ベスト (レンタル)
-    '3naw',           # ワンズファクトリーの総集編
-    '3swf',           # ワンズファクトリーの総集編
-    '3veq',           # VENUSの総集編 (レンタル)
-    '434dfda',        # デジタルアークの総集編
-    '434dgtl',        # デジタルアークの総集編
-    '434gkdfda',      # デジタルアークの総集編
-    '434kcda',        # デジタルアークの総集編
-    '49cadv',         # クリスタル映像の総集編
-    '4atk',           # Attackers BEST 総集編専門レーベル (レンタル)
-    '4idb',           # アイポケの総集編 (レンタル)
-    '4jus',           # マドンナ/Madonnaの総集編 (レンタル)
-    '4kib',           # kira☆kiraの総集編 (レンタル)
-    '4kwb',           # kawaiiの総集編 (レンタル)
-    '4hndb',          # 本中の総集編 (レンタル)
-    '4mby',           # 溜池ゴローの総集編 (レンタル)
-    '4mib',           # ムーディーズの総集編 (レンタル)
-    '4mitb',          # 蜜月の総集編 (レンタル)
-    '4mkck',          # E-BODYの総集編 (レンタル)
-    '4mvb',           # エムズビデオグループの総集編 (レンタル)
-    '4obe',           # マドンナ/Obasanの総集編 (レンタル)
-    '4ons',           # S1の総集編 (レンタル)
-    '4pbd',           # プレミアムの総集編 (レンタル)
-    '4ppb',           # OPPAIの総集編 (レンタル)
-    '4tmbt',          # teamZEROの総集編 (レンタル)
-    '4tywd',          # 乱丸の総集編 (レンタル)
-    '4vvv',           # ヴィの総集編 (レンタル)
-    '51cma',          # シネマジックの総集編
-    '55boya',         # BO-YA TMAの総集編レーベル
-    '55hsrm',         # SCREAM 総集編専門レーベル
-    '55id',           # TMAの総集編
-    '5atk',           # Attackers BEST 総集編専門レーベル (レンタル)
-    '5cra',           # クロスの総集編 (レンタル)
-    '5krb',           # カルマ/BEST 総集編専門レーベル (レンタル)
-    '5mkck',          # E-BODYの総集編 (レンタル)
-    '83sbb',          # マルクス兄弟の総集編
-    '83scf',          # マルクス兄弟の総集編
-    '84bdhyaku',      # 100人 KMPの総集編レーベル
-    '84hyaku',        # 100人 KMPの総集編レーベル
-    '84hyas',         # 100人 KMPの総集編レーベル
-    '9onsd',          # S1の総集編(BD)
-    'abcb',           # ABC/妄想族の総集編
-    'anhd',           # アンナと花子の総集編
-    'atkd',           # Attackers BEST 総集編専門レーベル
-    'apao',           # オーロラプロジェクト・アネックスの総集編
-    'avsw',           # AVS collector’s の総集編
-    'bcdp',           # 総集編メーカー BACK DROP
-    'bijc',           # 美人魔女の総集編
-    'bomn',           # BoinBB/ABCの総集編
-    'bmw',            # ワンズファクトリーの総集編
-    'cnz',            # キャンディの総集編
-    'corb',           # たぶんCOREの総集編
-    'crad',           # クロスの総集編
-    'crmn',           # 痴ロモン/妄想族 総集編レーベル
-    'daid',           # ダイナマイトエンタープライズの総集編
-    'dazd',           # ダスッ！の総集編
-    'dgtl',           # デジタルアークの総中編
-    'emac',           # DX（エマニエル）の総集編
-    'fabs',           # FAプロの総集編
-    'h_066fabr',      # FAプロの総集編 (レンタル)
-    'h_066fabs',      # FAプロの総集編
-    'h_066rabs',      # FAプロ 竜二ベスト
-    'h_068mxsps',     # マキシングの総集編
-    'h_086abba',      # センタービレッジの総集編
-    'h_086cbox',      # センタービレッジの総集編
-    'h_086cvdx',      # センタービレッジの総集編
-    'h_086euudx',     # センタービレッジの総集編
-    'h_086ferax',     # センタービレッジの総集編
-    'h_086gomu',      # センタービレッジの総集編
-    'h_086hhedx',     # センタービレッジの総集編
-    'h_086hthdx',     # センタービレッジの総集編
-    'h_086honex',     # センタービレッジの総集編
-    'h_086iannx',     # センタービレッジの総集編
-    'h_086jrzdx',     # センタービレッジの総集編
-    'h_086oita',      # センタービレッジの総集編
-    'h_086qizzx',     # センタービレッジの総集編
-    'h_108mobsp',     # モブスターズの総集編
-    'h_127ytr',       # NONの総集編
-    'h_175dbeb',      # BabyEntertainmentの総集編
-    'h_175dxdb',      # BabyEntertainmentの総集編
-    'h_179dmdv',      # ゲインコーポレーションの総集編
-    'h_213agemix',    # SEX Agentの総集編 (レンタル)
-    'h_213ageom',     # SEX Agentの総集編
-    'h_237swat',      # シリーズ ○○三昧 プラネットプラスの総集編シリーズ
-    'h_254kanz',      # 完全盤 STAR PARADISEの総集編レーベル
-    'h_254mgdn',      # MEGADON STAR PARADISEの総集編レーベル
-    'h_254wnxg',      # VOLUME STAR PARADISEの総集編レーベル
-    'h_443hpr',       # 催眠研究所の総集編シリーズ
-    'h_479gah',       # GO AHEAD 総集編レーベル (GALLOP)
-    'h_479gfs',       # SPECIAL GIFT 総集編レーベル (GALLOP)
-    'h_479gft',       # GIFT 総集編レーベル (GALLOP)
-    'h_479gfx',       # GIFT DX 総集編レーベル (GALLOP)
-    'h_479gne',       # NEO GIFT 総集編レーベル (GALLOP)
-    'h_537odfg',      # ワンダフルの総集編
-    'h_540exta',      # エクストラ 総集編専門レーベル
-    'h_543rlod',      # 乱熟 総集編メーカー
-    'h_543rloh',      # 乱熟 総集編メーカー
-    'h_543rloj',      # 乱熟 総集編メーカー
-    'h_543rlok',      # 乱熟 総集編メーカー
-    'h_543rloi',      # 乱熟 総集編メーカー
-    'h_544yuyg',      # ケンシロウプロジェクトの総集編
-    'h_797impa',      # impact（サンワソフト）の総集編
-    'h_838chao',      # CHAOS（Pandora）総集編レーベル (Pandra)
-    'h_865jkn',       # 総集編シリーズ 完熟肉汁つゆだく交尾集
-    'hjbb',           # はじめ企画の総集編
-    'hndb',           # 本中の総集編
-    'hoob',           # AVS collector’sの総集編
-    'idbd',           # アイポケの総集編
-    'jfb',            # Fitchの総集編
-    'jomn',           # ABC/妄想族の総集編
-    'jusd',           # マドンナ/Madonnaの総集編
-    'kibd',           # kira☆kiraの総集編
-    'koze',           # ローグ・プラネット（フェチ）/妄想族の総集編
-    'krbv',           # カルマ/BEST 総集編専門レーベル
-    'kwbd',           # kawaiiの総集編
-    'mbyd',           # 溜池ゴローの総集編
-    'mibd',           # ムーディーズの総集編
-    'mitb',           # 蜜月の総集編
-    'mkck',           # E-BODYの総集編
-    'mmb',            # 桃太郎ベスト
-    'mvbd',           # エムズビデオグループの総集編
-    'n_1155dslb',     # グラッソの復刻版(?)
-    'obe',            # マドンナ/Obasanの総集編
-    'onsd',           # S1の総集編
-    'oomn',           # お母さん.com/ABCの総集編
-    'rbb',            # ROOKIEの総集編
-    'pbd',            # プレミアムの総集編
-    'ppbd',           # OPPAIの総集編
-    'ptko',           # パツキン/ABCの総集編
-    'rabs',           # FAプロ 竜二ベスト
-    'slba',           # スタイルアート/妄想族の総集編
-    'stol',           # 変態紳士倶楽部の総集編
-    'swac',           # 湘南/妄想族の総集編
-    'tmbt',           # teamZEROの総集編
-    'tomn',           # TEPPANの総集編
-    'tywd',           # 乱丸の総集編
-    'veq',            # VENUSの総集編
-    'vero',           # VENUSの総集編
-    'veve',           # VENUSの総集編
-    'vvvd',           # ヴィの総集編
-
-    '15awad12',       # 桃太郎映像出版の総集編作品
-    '15rawa012',      # 桃太郎映像出版の総集編作品 (レンタル)
-    '15rsen167',      # 桃太郎映像出版の総集編作品 (レンタル)
-    '15send167',      # 桃太郎映像出版の総集編作品
-    '4bf249',         # BeFreeの総集編作品
-    '84okax014',      # おかず。の総集編作品
-    '84rokax014r',    # おかず。の総集編作品 (レンタル)
-    '84umso013',      # UMANAMIの総集編作品
-    'bf249',          # BeFreeの総集編作品
-    'bf315',          # BeFreeの総集編作品
-    'bf374',          # BeFreeの総集編作品
-    'bf375',          # BeFreeの総集編作品
-    'bf392',          # BeFreeの総集編作品
-    'bnsps382',       # ながえSTYLEの総集編作品
-    'h_093r18306',    # チェリーズの総集編作品
-    'h_093r18308',    # チェリーズの総集編作品
-    'emaf324',        # フォーディメンション（エマニエル）の総集編か再利用作品
-    'h_254vnds3141',  # ネクストイレブンの総集編作品
-    'h_606ylw4303',   # Yellow Moon (Mellow Moon) の総集編作品
-    'h_606ylw4308',   # Yellow Moon (Mellow Moon) の総集編作品
-    'h_746rssr051r',  # SOSORUの総集編作品 (レンタル)
-    'h_746rssr081r',  # SOSORUの総集編作品 (レンタル)
-    'h_746ssr051',    # SOSORUの総集編作品
-    'h_746ssr081',    # SOSORUの総集編作品
-    'h_970kagh023',   # かぐや姫（メロウムーン）の総集編作品
-    'h_970kagh023r',  # かぐや姫（メロウムーン）の総集編作品 (レンタル)
-    'h_970kagh015',   # かぐや姫（メロウムーン）の総集編作品
-    'h_970kagh015r',  # かぐや姫（メロウムーン）の総集編作品 (レンタル)
-)
 # 品番正規表現
 _OMNI_PATTERN_CID = (
     _re.compile(r'^(?:[hn]_)?\d*aaj'),  # AV30
@@ -1274,60 +915,12 @@ _re_ge4h = _re.compile(r'(?:[4-9]|\d{2,})時間')
 _re_ge200m = _re.compile(r'(?:[2-9]\d{2}|\d{4,})分')
 
 
-def check_omit(title, cid, omit_suss_4h=None, no_omits=set()):
-    """
-    除外対象かどうかチェック
-
-    除外対象なら対象の情報を返す。
-    """
-    def _check_omitprfx(cid, prefix=_OMNI_PREFIX, patn=_OMNI_PATTERN_CID):
-        """隠れ総集編チェック(プレフィクス版)"""
-        return any(map(cid.startswith, prefix)) or any(p.search(cid) for p in patn)
-
-    def _check_omnivals(title):
-        """隠れ総集編チェック(関連数値編)"""
-        title = _normalize(title, sep=' ')[0]
-        hit = tuple(_chain.from_iterable(
-            p.findall(title) for p in _re_omnivals))
-        if len(hit) > 1:
-            return hit
-
-    def _is_omnirookie(cid, title):
-        """ROOKIE隠れ総集編チェック"""
-        if _check_omitprfx(cid, _ROOKIE):
-            # ROOKIEチェック
-            hh = _re_ge4h.findall(title)
-            mmm = _re_ge200m.findall(title)
-            return hh, mmm
-        else:
-            return None, None
+def check_omit(title, cid, no_omits=set()):
 
     # 除外作品チェック (タイトル内の文字列から)
     for key, word in filter(lambda k: k[0] not in no_omits,
                             _check_omitword(title)):
         return key, word
-
-    # 隠れ総集編チェック
-    if '総集編作品' not in no_omits and _isnot_torioroshi('総集編作品', title):
-        # 隠れ総集編チェック(タイトル内の数値から)
-        omnivals = _check_omnivals(title)
-        if omnivals:
-            return '総集編作品', omnivals
-
-        # 隠れ総集編チェック(cidから)
-        if _check_omitprfx(cid):
-            return '総集編作品', cid
-
-        # 総集編容疑メーカー
-        if omit_suss_4h:
-            hh, mmm = _is_omnirookie(cid, title)
-            if hh or mmm:
-                return '総集編作品', omit_suss_4h + '(4時間以上)'
-
-    # 隠れIVチェック
-    if 'イメージビデオ' not in no_omits:
-        if _check_omitprfx(cid, _IV_PREFIX):
-            return 'イメージビデオ', cid
 
 
 class NotKeyIdYet:
@@ -1413,7 +1006,6 @@ class DMMParser:
         self._filter_pid_s = filter_pid_s
         self._autostrip = autostrip
         self._pass_bd = pass_bd
-        self._n_i_s = n_i_s
         self._longtitle = longtitle
         self._check_rental = check_rental
         self._check_rltd = check_rltd
@@ -1495,14 +1087,6 @@ class DMMParser:
                 self._ignore_pfmrs = True
                 _verbose('Jewel family found')
 
-            # 総集編メーカーチェック
-            if mkid in _OMIT_MAKER:
-                self._mark_omitted('総集編作品', _OMIT_MAKER[mkid])
-
-            # 総集編容疑メーカー
-            if mkid in _OMIT_SUSS_4H:
-                self._omit_suss_4h = _OMIT_SUSS_4H[mkid]
-
             # 他のサービスを強制チェック
             self._force_chk_sale = _FORCE_CHK_SALE_MK.get(mkid, False)
             _verbose('series forece chk other: ', self._force_chk_sale)
@@ -1520,10 +1104,6 @@ class DMMParser:
 
             self._sm['label'] = lb.text
 
-            # 隠れ総集編レーベルチェック
-            if lbid in _OMIT_LABEL:
-                self._mark_omitted('総集編作品', _OMIT_LABEL[lbid])
-
             self._sm['label_id'] = lbid
             _verbose('label: ', self._sm['label'])
 
@@ -1535,15 +1115,6 @@ class DMMParser:
                 return
 
             srid = get_id(sr.get('href'), param='series')[0]
-
-            if self._n_i_s:
-                _verbose('not in series')
-                raise OmitTitleException('series',
-                                         _NiS(sid=srid, name=sr.text))
-
-            # 隠れ総集編シリーズチェック
-            if srid in _OMIT_SERIES:
-                self._mark_omitted('総集編作品', _OMIT_SERIES[srid])
 
             if srid in _IGNORE_SERIES:
                 # シリーズとして扱わない処理
@@ -1616,18 +1187,8 @@ class DMMParser:
         meta_img = self._he.find('.//meta[@property="og:image"]')
         try:
             meta_img = meta_img.get('content')
-            if meta_img.endswith('ps.jpg'):
-                # 配信動画, VR
-                img_sm = meta_img
-                img_lg = meta_img.replace('ps.jpg', 'pl.jpg')
-            elif meta_img.endswith('jp.jpg'):
-                # 素人
-                img_sm = meta_img.replace('jp.jpg', 'js.jpg')
-                img_lg = meta_img
-            else:
-                # DVD
-                img_lg = meta_img
-                img_sm = meta_img.replace('pl.jpg', 'ps.jpg')
+            img_lg = meta_img
+            img_sm = meta_img.replace('pl.jpg', 'ps.jpg')
         except AttributeError:
             img_lg = None
             img_sm = None
@@ -1800,7 +1361,6 @@ class DMMParser:
         self._sm = sm
         self._ignore_pfmrs = ignore_pfmrs
         self._bluray = False
-        self._omit_suss_4h = False
         self._rental_pcdr = False
         self._force_chk_sale = False
 
@@ -1823,24 +1383,10 @@ class DMMParser:
         # 除外作品チェック
         omitinfo = check_omit(self._sm['title'],
                               self._sm['cid'],
-                              self._omit_suss_4h,
                               no_omits=gen_no_omits())
 
         if omitinfo:
             self._mark_omitted(*omitinfo)
-
-        if self._omit_suss_4h and cvt2int(self._sm['time']) > 200:
-            # 総集編容疑メーカーで4時間以上
-            self._mark_omitted('総集編作品', self._omit_suss_4h + '(4時間以上)')
-
-        if service == 'ama':
-            # 素人動画の時のタイトル/副題の再作成
-            self._sm['title'] = self._sm['subtitle'] = \
-                                self._sm['title'] + self._sm['subtitle']
-            # メディア情報はないのでここで
-            self._sm['media'] = '素人動画'
-        elif service == 'video':
-            self._sm['media'] = 'ビデオ動画'
 
         sale_data = None
         # if self.deeper and service != 'ama' and __name__ != '__main__':
