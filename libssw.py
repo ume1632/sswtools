@@ -1392,119 +1392,6 @@ def _compare_title(cand, title, ttl_s=None):
     return (is_startsw and ttl_s == cand_s) if ttl_s or cand_s else is_startsw
 
 
-class _LongTitleError(Exception):
-    pass
-
-
-def _ret_apache(cid, pid):
-    """Apacheのタイトルの長いやつ"""
-    _verbose('Checking Apache title...')
-
-    serial = cid.replace('h_701ap', '')
-    url = 'http://www.apa-av.jp/list_detail/detail_{}.html'.format(serial)
-
-    resp, he = open_url(url)
-
-    if resp.status != 200:
-        raise _LongTitleError(url, resp.status)
-
-    opid, actress, director = ret_apacheinfo(he)
-
-    if pid != opid:
-        _verbose('check_apache: PID on Apache official is different from DMM')
-        raise _LongTitleError(pid, opid)
-
-    return he.head.find('title').text.strip().replace('\n', ' ')
-
-
-class _RetrieveTitleSCOOP:
-    """SCOOPのタイトルの長いやつ"""
-    def __init__(self):
-        self._cookie = load_cache('kmp_cookie', expire=86400)
-
-    def __call__(self, cid, pid):
-        _verbose('Checking SCOOP title...')
-
-        prefix = cid[2:6]
-        serial = cid[6:]
-        url = 'http://www.km-produce.com/works/{}-{}'.format(prefix, serial)
-
-        while True:
-            _verbose('cookie: ', self._cookie)
-            resp, he = open_url(url, set_cookie=self._cookie)
-            if 'set-cookie' in resp:
-                self._cookie = resp['set-cookie']
-                _verbose('set cookie')
-                save_cache(self._cookie, 'kmp_cookie')
-            else:
-                break
-
-        if resp.status != 200:
-            raise _LongTitleError(url, resp.status)
-
-        return he.find_class('title')[0].text.strip()
-
-_ret_scoop = _RetrieveTitleSCOOP()
-
-
-class _RetrieveTitlePlum:
-    """プラムのタイトル"""
-    def __init__(self, prefix):
-        self._prefix = prefix
-        self._ssid = None
-        self._cart = None
-
-    def _parse_cookie(self, cookie):
-        _verbose('parse cookie: ', cookie)
-        for c in filter(lambda c: '=' in c,
-                        (i.split(';')[0].strip() for i in cookie.split(','))):
-            lhs, rhs = c.split('=')
-            if rhs == 'deleted':
-                self._ssid = lhs
-            elif lhs == 'cart_pDq7k':
-                self._cart = rhs
-
-        if self._ssid and self._cart:
-            return 'AJCSSESSID={}; cart_pDq7k={}; enter=enter'.format(
-                self._ssid, self._cart)
-        else:
-            return None
-
-    def __call__(self, cid, pid):
-        _verbose('Checking Plum title...')
-
-        serial = cid.replace(self._prefix, '')
-        if len(serial) < 3:
-            serial = '{:0>3}'.format(serial)
-        url = 'http://www.plum-web.com/?view=detail&ItemCD=SE{}&label=SE'.format(
-            serial)
-
-        cookie = ''
-        for i in range(5):
-            cookie = self._parse_cookie(cookie)
-            _verbose('plum cookie: ', cookie)
-
-            resp, he = open_url(url, set_cookie=cookie, cache=False)
-
-            cookie = self._parse_cookie(resp.get('set-cookie', cookie))
-
-            if resp.status != 200:
-                raise _LongTitleError(url, resp.status)
-
-            if not len(he.get_element_by_id('nav', '')):
-                break
-
-        else:
-            _emsg('E', 'プラム公式サイトをうまく開けませんでした。')
-
-        title = he.find('.//h2[@id="itemtitle"]').text.strip()
-        title = sub(_sub_ltbracket, title)
-
-        return title
-
-# _ret_plum_se = _RetrieveTitlePlum('h_113se')
-
-
 class OmitTitleException(Exception):
     """総集編など除外タイトル例外"""
     def __init__(self, key, word):
@@ -1514,11 +1401,6 @@ class OmitTitleException(Exception):
 
 class DMMParser:
     """DMM作品ページの解析"""
-    _TITLE_FROM_OFFICIAL = {'h_701ap': _ret_apache,    # アパッチ
-                            # '84scop': _ret_scoop,    # SCOOP
-                            # '84scpx': _ret_scoop,    # SCOOP
-                            # 'h_113se': _ret_plum_se, # 素人援交生中出し(プラム)
-    }
 
     _re_genre = _re.compile(r'/article=keyword/id=(\d+)/')
     _re_age = _re.compile(r'(\(\d+?\))$')
@@ -1555,32 +1437,6 @@ class DMMParser:
             _verbose('Omit exception ({}, {})'.format(key, hue))
             raise OmitTitleException(key, hue)
 
-    def _chk_longtitle(self):
-        """DMMでは端折られている可能性があるタイトルが長いメーカーチェック"""
-        def _det_longtitle_maker():
-            for key in filter(lambda k: self._sm['cid'].startswith(k),
-                              self._TITLE_FROM_OFFICIAL):
-                _verbose('title from maker: ', key)
-                return self._TITLE_FROM_OFFICIAL[key]
-            return False
-
-        tmkr = ''
-        titleparser = _det_longtitle_maker()
-        if titleparser:
-            # Apacheの作品タイトルはメーカー公式から
-            try:
-                tmkr = titleparser(self._sm['cid'], self._sm['pid'])
-            except _LongTitleError as e:
-                _emsg(
-                    'W',
-                    'メーカー公式サイトから正しい作品ページを取得できませんでした: ',
-                    e.args)
-            _verbose('title maker: ', tmkr)
-
-            return tmkr
-        else:
-            return None
-
     def _ret_title(self):
         """タイトルの採取 (DMMParser)"""
         try:
@@ -1590,7 +1446,7 @@ class DMMParser:
 
         _verbose('title dmm: ', tdmm)
 
-        title = self._chk_longtitle() or tdmm
+        title = tdmm
 
         title_dmm = tdmm if not _compare_title(title,
                                                *_normalize(tdmm)) else ''
@@ -1802,9 +1658,6 @@ class DMMParser:
         el = self._he.get_element_by_id('performer', ())
         len_el = len(el)
         if len_el:
-            # if self._omit_suss and len_el > 3:
-            #     # ROOKIE出演者数チェック
-            #     self._mark_omitted('総集編作品', self._omit_suss)
 
             if el[-1].get('href') == '#':
                 # 「▼すべて表示する」があったときのその先の解析
@@ -3018,42 +2871,6 @@ get_actname = _GetActName()
 
 def fmt_name(director: str):
     return ','.join(director.split('：')[-1].split('＋'))
-
-
-def ret_apacheinfo(elems):
-    """Apache公式から作品情報を取得"""
-
-    pid = actress = director = ''
-
-    for t in elems.find_class("detail-main-meta")[0].xpath('li/text()'):
-
-        t = t.strip()
-
-        if t.startswith('品番：'):
-            pid = t.split('：')[-1].strip()
-            _verbose('pid: ', pid)
-        elif t.startswith('出演女優：'):
-            actress = fmt_name(t)
-            _verbose('actress: ', actress)
-        elif t.startswith('監督：'):
-            director = fmt_name(t)
-            _verbose('director: ', director)
-
-        if pid and director:
-            break
-    else:
-        missings = []
-
-        if not pid:
-            missings.append('品番')
-
-        if not director:
-            missings.append('監督')
-
-        _emsg('E', 'Apacheサイトから「{}」を取得できませんでした。'.format(
-            'と'.join(missings)))
-
-    return pid, actress, director
 
 
 def ssw_searchnext(el):
