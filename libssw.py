@@ -13,7 +13,6 @@ import pickle as _pickle
 import webbrowser as _webbrowser
 import unicodedata as _unicodedata
 from operator import itemgetter as _itemgetter
-from multiprocessing import Process as _Process
 from collections import namedtuple as _namedtuple
 from tempfile import gettempdir as _gettempdir, mkstemp as _mkstemp
 from shutil import rmtree as _rmtree
@@ -995,10 +994,8 @@ class __OpenUrl:
         if _VERBOSE > 1:
             _httplib2.debuglevel = 1
         self.__http = _httplib2.Http(str(_CACHEDIR))
-        self.__wait = dict()
-
-    def __sleep(self):
-        _time.sleep(5)
+        # 最後のアクセス時刻（unix time）を記録する
+        self.__last_access = dict()
 
     def _url_openerror(self, name, info, url):
         """URLオープン時のエラーメッセージ"""
@@ -1014,12 +1011,15 @@ class __OpenUrl:
             _verbose('charset from resp.')
             return c_type[0]
 
-        # HTMLヘッダから取得
-        c_type = self._re_charset.findall(_fromstring(html).xpath(
-            '//meta[@http-equiv="Content-Type"]')[0].get('content', False))
-        if c_type:
-            _verbose('charset from meta.')
-            return c_type[0]
+        try:
+            c_type = self._re_charset.findall(_fromstring(html).xpath(
+                '//meta[@http-equiv="Content-Type"]')[0].get('content', False))
+            if c_type:
+                _verbose('charset from meta.')
+                return c_type[0]
+        except Exception:
+            pass
+        return 'utf-8'
 
     def __call__(self, url, charset=None, set_cookie=None, cache=True,
                  method='GET', to_elems=True):
@@ -1043,14 +1043,13 @@ class __OpenUrl:
         _verbose('http headers: ', headers)
 
         for i in range(5):
-
-            try:
-                self.__wait[site].is_alive()
-            except KeyError:
-                pass
-            else:
-                _verbose('joinning wait_', site)
-                self.__wait[site].join()
+            # 前回アクセスから5秒経過していない場合は差分だけ待つ
+            if site in self.__last_access:
+                elapsed = _time.time() - self.__last_access[site]
+                if elapsed < 5:
+                    wait_time = 5 - elapsed
+                    _verbose(f'waiting {wait_time:.1f}s for {site}')
+                    _time.sleep(wait_time)
 
             try:
                 resp, html = self.__http.request(
@@ -1068,18 +1067,15 @@ class __OpenUrl:
             _verbose('http status: ', resp.status)
             _verbose('fromcache: ', resp.fromcache)
 
+            # キャッシュからの返却でなければアクセス時刻を更新
+            if not getattr(resp, 'fromcache', False):
+                self.__last_access[site] = _time.time()
+
             # HTTPステータスがサーバ/ゲートウェイの一時的な問題でなければ終了
             if resp.status and not 500 <= resp.status <= 504:
                 if resp.status not in {200, 404}:
                     _emsg('W', 'HTTP status: ', resp.status)
                 break
-
-            # Windowsでweakref objectエラーが出るので移動
-            # 上記のifで抜けるとsleepしたインスタンス消滅？
-            if not resp.fromcache:
-                _verbose('start wait_', site)
-                self.__wait[site] = _Process(target=self.__sleep, daemon=True)
-                self.__wait[site].start()
 
         else:
             _verbose('over 5 cnt with status 50x')
@@ -1091,7 +1087,7 @@ class __OpenUrl:
 
             try:
                 html = html.decode(encoding, 'ignore')
-            except UnboundLocalError:
+            except (UnboundLocalError, TypeError):
                 _emsg('E', 'HTMLの読み込みに失敗しました: resp=', resp)
 
         return resp, _fromstring(html) if to_elems else html
