@@ -22,7 +22,7 @@ g_link_label = ''
 g_link_series = ''
 g_pid = ''
 g_actress = []
-g_service = ''
+g_media = ''
 g_title = ''
 
 def _trim_name(name):
@@ -48,7 +48,7 @@ def open_wiki(*pages):
             inner = he.find_class('inner')[0]
             editurl = inner.xpath('.//a')[0].get('href')
 
-            if g_service == 'ama':
+            if g_media in ('素人動画', '配信専用動画'):
                 for h4 in he.iter('h4'):
                     h4_text = ''.join(h4.itertext())
 
@@ -56,7 +56,9 @@ def open_wiki(*pages):
                         a_elem = h4.find('a')
                         if a_elem is not None and 'href' in a_elem.attrib:
                             editurl = a_elem.attrib['href']
-            elif g_service == 'video' and ('【VR】' in g_title):
+                            break;
+
+            elif g_media == 'VR動画':
                 for h4 in he.iter('h4'):
                     h4_text = ''.join(h4.itertext())
 
@@ -64,6 +66,7 @@ def open_wiki(*pages):
                         a_elem = h4.find('a')
                         if a_elem is not None and 'href' in a_elem.attrib:
                             editurl = a_elem.attrib['href']
+                            break;
 
             if editurl:
                 _webbrowser.open_new_tab(editurl)
@@ -125,7 +128,7 @@ def button1_action():
             if ('&' in props['url']):
                 urll = props['url'].split('&')
                 props['url'] = urll[0]
-            b, data = _fanzavideo2ssw.main(props, args)
+            b, status, data = _fanzavideo2ssw.main(props, args)
         else:
             b, data = _jav2ssw.main(props, args)
 
@@ -133,7 +136,7 @@ def button1_action():
         global g_link_series
         global g_actress
         global g_pid
-        global g_service
+        global g_media
         global g_title
 
         if b:
@@ -142,7 +145,7 @@ def button1_action():
             g_link_series = data.link_series
             g_actress = data.actress
             g_pid = data.pid
-            g_service = _libssw.resolve_service(props['url'])
+            g_media = data.media
             g_title = data.title
 
             # 結果を反映
@@ -166,7 +169,7 @@ def button1_action():
             g_link_series = ''
             g_actress = []
             g_pid = ''
-            g_service = ''
+            g_media = ''
             g_title = ''
             label7.config(text='取得失敗')
 

@@ -609,11 +609,6 @@ def get_args(argv):
                          help='作品名がパターン(正規表現)とマッチしたものだけ作成',
                          metavar='PATTERN')
 
-    argparser.add_argument('--not-in-series', '--n-i-s',
-                           help='シリーズに所属していないもののみ作成(-K/-L/-U 指定時)',
-                           action='store_true',
-                           dest='n_i_s')
-
     argparser.add_argument('--row',
                            help='先頭行のみなし行開始位置 (-t/-tt 指定時のみ)',
                            type=int,
@@ -1037,10 +1032,9 @@ def truncate_th(cols):
             yield ''
 
 
-def number_header(article, n_i_s, page):
+def number_header(article, page):
     """ページヘッダの出力"""
-    return '{}{} {}'.format(article,
-                            'その他' if n_i_s else '',
+    return '{} {}'.format(article,
                             page if page > 1 else '')
 
 
@@ -1078,16 +1072,11 @@ class BuildPage:
 
         verbose('wktxt attr: ', self._attr)
 
-    def _header(self, n_i_s):
+    def _header(self):
         """ページヘッダの出力"""
         self.pagen = (self._row // self._split + 1) if self._row >= 0 else 0
-        page_name = number_header(self._a_name, n_i_s, self.pagen)
+        page_name = number_header(self._a_name, self.pagen)
         yield '\n' + page_name + '\n'
-
-        if n_i_s:
-            yield '\n{}「[[{}>]]」でシリーズ化されていない作品の一覧。\n'.format(
-                self._retlabel,
-                self._a_name)
 
         yield self._a_hdr + '\n'
 
@@ -1111,11 +1100,11 @@ class BuildPage:
             # ブラウザで開く
             libssw.open_ssw(*self._page_names)
 
-    def __call__(self, n_i_s, is_table):
+    def __call__(self, is_table):
 
         self._titles_dmm = []
 
-        yield from self._header(n_i_s)
+        yield from self._header()
 
         while self._no < self._length:
 
@@ -1148,7 +1137,7 @@ class BuildPage:
         yield from self._tail()
 
 
-def finalize(build_page, row, make, n_i_s, nis_series, outfile):
+def finalize(build_page, row, make, outfile):
     """最終的なウィキテキスト出力"""
     for is_table in compress((True, False), (make.table, make.actress)):
         verbose('is_table: ', is_table)
@@ -1156,7 +1145,7 @@ def finalize(build_page, row, make, n_i_s, nis_series, outfile):
         build_page.start(row, is_table)
 
         while not build_page.done:
-            per_page = '\n'.join(build_page(n_i_s, is_table))
+            per_page = '\n'.join(build_page(is_table))
             yield per_page
 
             if outfile:
@@ -1166,17 +1155,6 @@ def finalize(build_page, row, make, n_i_s, nis_series, outfile):
                 fd = sys.stdout
 
             print(per_page, file=fd)
-
-            if outfile:
-                fd.close()
-
-        if n_i_s and nis_series:
-            fd = open(outf, 'a') if outfile else sys.stdout
-
-            print('** 見つかったシリーズ一覧', file=fd)
-            print(*map('-[[{}]]'.format, sorted(nis_series)),
-                  sep='\n', file=fd)
-            print(file=fd)
 
             if outfile:
                 fd.close()
@@ -1196,11 +1174,6 @@ def main(argv=None):
     if not args.retrieval:
         args.retrieval = libssw.extr_ids.retrieval
     emsg('I', '対象: {}'.format(args.retrieval))
-
-    # -L, -K , -U 以外では --not-in-series は意味がない
-    if args.retrieval not in {'label', 'maker', 'url'}:
-        args.n_i_s = False
-        verbose('force disabled n_i_s')
 
     if args.retrieval == 'actress':
         for i in filter(lambda i: i in libssw.HIDE_NAMES, ids):
@@ -1272,8 +1245,6 @@ def main(argv=None):
 
     wikitexts = []
     title_list = []
-    nis_series_names = set()  # 発見したシリーズ名 (n_i_s用)
-    nis_series_urls = set()  # 発見したシリーズ一覧のURL (n_i_s用)
     rest = total
     omitted = listparser.omitted
     before = True if key_id else False
@@ -1284,7 +1255,6 @@ def main(argv=None):
                                  start_pid_s=args.start_pid_s,
                                  filter_pid_s=re_filter_pid_s,
                                  pass_bd=args.pass_bd,
-                                 n_i_s=args.n_i_s,
                                  longtitle=args.longtitle,
                                  check_rental=args.check_rental,
                                  check_rltd=args.check_rltd)
@@ -1344,14 +1314,6 @@ def main(argv=None):
             rest -= 1
             continue
 
-        # 既知のシリーズ物のURLならスキップ (--not-in-series)
-        if props.url in nis_series_urls:
-            emsg('I', '作品を除外しました: title="{}" (known series)'.format(
-                props.title))
-            omitted += 1
-            rest -= 1
-            continue
-
         if props.url in join_d:
             # joinデータがあるとデータをマージ
             props.merge(join_d[props.url])
@@ -1404,15 +1366,6 @@ def main(argv=None):
                 emsg('I', '作品を除外しました: '
                      'cid={0}, reason=("{1[0]}", {1[1]})'.format(
                          props.cid, data))
-                if args.n_i_s and data[0] == 'series':
-                    # no-in-series用シリーズ作品先行取得
-                    verbose('Retriving series products...')
-                    nis_series_names.add(data[1].name)
-                    priurls = libssw.join_priurls('series',
-                                                  data[1].sid,
-                                                  service=args.service)
-                    nis_series_urls.update(
-                        u[0] for u in libssw.from_dmm(seriesparser, priurls))
                 omitted += 1
 
         else:
@@ -1462,8 +1415,7 @@ def main(argv=None):
 
         print(file=sys.stderr)
 
-        result = '\n'.join(finalize(build_page, args.row, make,
-                                    args.n_i_s, nis_series_names, outfile))
+        result = '\n'.join(finalize(build_page, args.row, make, outfile))
 
         build_page.open_browser(args.browser)
 

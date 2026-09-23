@@ -291,7 +291,7 @@ _emsg = _libssw.Emsg(_libssw.ownname(__file__))
 
 _ReturnVal = _namedtuple('ReturnVal',
                          ('release', 'pid', 'title', 'title_dmm', 'url',
-                          'time', 'maker', 'label', 'series',
+                          'media', 'maker', 'label', 'series',
                           'actress', 'link_label', 'link_series',
                           'wktxt_a', 'wktxt_t'))
 
@@ -523,7 +523,7 @@ def _build_image_url(service, cid):
 
 
 _rep_expansion = (('@{media}', 'media'),
-                  ('@{time}', 'time'),
+                  ('@{time}', 'media'),
                   ('@{series}', 'series'),
                   ('@{maker}', 'maker'),
                   ('@{label}', 'label'),
@@ -818,7 +818,7 @@ def main(props=_libssw.Summary(), p_args=_argparse.Namespace, dmmparser=None):
                                               summ['title'],
                                               summ['title_dmm'],
                                               summ['url'],
-                                              summ['time'],
+                                              summ['media'],
                                               summ('maker', 'maker_id'),
                                               summ('label', 'label_id'),
                                               summ('series', 'series_id'),
@@ -953,7 +953,7 @@ def main(props=_libssw.Summary(), p_args=_argparse.Namespace, dmmparser=None):
                                              summ['title'],
                                              summ['title_dmm'],
                                              summ['url'],
-                                             summ['time'],
+                                             summ['media'],
                                              summ('maker', 'maker_id'),
                                              summ('label', 'label_id'),
                                              summ('series', 'series_id'),
