@@ -730,11 +730,6 @@ def get_args(argv):
                            dest='check_rltd',
                            action='store_false',
                            default=True)
-    argparser.add_argument('--disable-longtitle',
-                           help='アパッチ、SCOOPの長いタイトルを補完しない',
-                           dest='longtitle',
-                           action='store_false',
-                           default=True)
     argparser.add_argument('--fastest',
                            help='ウェブにアクセスするあらゆる補助処理を行わない',
                            action='store_true')
@@ -812,8 +807,7 @@ def get_args(argv):
         args.split = 0
 
     if args.fastest:
-        for a in ('follow_rdr', 'check_rental', 'pass_bd',
-                  'check_listpage', 'longtitle'):
+        for a in ('follow_rdr', 'pass_bd', 'check_listpage'):
             setattr(args, a, False)
 
     # キャッシュディレクトリの削除
@@ -1255,8 +1249,6 @@ def main(argv=None):
                                  start_pid_s=args.start_pid_s,
                                  filter_pid_s=re_filter_pid_s,
                                  pass_bd=args.pass_bd,
-                                 longtitle=args.longtitle,
-                                 check_rental=args.check_rental,
                                  check_rltd=args.check_rltd)
 
     if args.retrieval in {'maker', 'label', 'series'}:

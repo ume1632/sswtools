@@ -90,8 +90,7 @@ def _get_args(argv, p_args):
     args = argparser.parse_args(argv)
 
     if args.fastest:
-        for a in ('follow_rdr', 'check_rental', 'check_listpage',
-                  'check_rltd', 'longtitle'):
+        for a in ('follow_rdr', 'check_listpage', 'check_rltd'):
             setattr(args, a, False)
 
     return args
