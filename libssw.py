@@ -240,7 +240,6 @@ _re_interlink = _re.compile(r'(\[\[.+?\]\])')
 
 
 _DummyResp = _namedtuple('DummyResp', 'status,fromcache')
-_NiS = _namedtuple('n_i_s', 'sid,name')
 
 
 def ownname(path):
@@ -996,8 +995,7 @@ class DMMParser:
 
     def __init__(self, no_omits=gen_no_omits(), patn_pid=None,
                  start_date=None, start_pid_s=None, filter_pid_s=None,
-                 autostrip=True, pass_bd=False, n_i_s=False,
-                 longtitle=False, check_rental=False, check_rltd=False,
+                 autostrip=True, pass_bd=False, check_rltd=False,
                  deeper=True, quiet=False):
         self._no_omits = no_omits
         self._patn_pid = patn_pid
@@ -1006,8 +1004,6 @@ class DMMParser:
         self._filter_pid_s = filter_pid_s
         self._autostrip = autostrip
         self._pass_bd = pass_bd
-        self._longtitle = longtitle
-        self._check_rental = check_rental
         self._check_rltd = check_rltd
         self._deeper = deeper
         self._quiet = quiet

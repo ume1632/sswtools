@@ -313,6 +313,7 @@ _IGNORE_LABEL = {'AKNR',
                  'ATHENA',
                  'AVSCollector’s',
                  'BALTAN',
+                 'BIGMORKAL',
                  'Calen',
                  'digital ark',
                  'DEEP’S',
@@ -421,11 +422,6 @@ def _get_args(argv, p_args):
                            dest='follow_rdr',
                            action='store_false',
                            default=getattr(p_args, 'follow_rdr', True))
-    argparser.add_argument('--disable-check-rental',
-                           help='レンタル先行レーベルでもレンタル版のリリースをチェックしない',
-                           dest='check_rental',
-                           action='store_false',
-                           default=getattr(p_args, 'check_rental', True))
     argparser.add_argument('--disable-check-related',
                            help='他メディアやサービスの情報収集を行わない',
                            dest='check_rltd',
@@ -436,11 +432,6 @@ def _get_args(argv, p_args):
                            dest='check_listpage',
                            action='store_false',
                            default=getattr(p_args, 'check_listpage', True))
-    argparser.add_argument('--disable-longtitle',
-                           help='アパッチ、SCOOPの長いタイトルを補足しない',
-                           dest='longtitle',
-                           action='store_false',
-                           default=getattr(p_args, 'longtitle', True))
     argparser.add_argument('--fastest',
                            help='ウェブにアクセスするあらゆる補助処理を行わない',
                            action='store_true',
@@ -503,8 +494,7 @@ def _get_args(argv, p_args):
         _libssw.clear_cache()
 
     if args.fastest:
-        for a in ('follow_rdr', 'check_rental', 'check_listpage',
-                  'check_rltd', 'longtitle'):
+        for a in ('follow_rdr', 'check_listpage', 'check_rltd'):
             setattr(args, a, False)
 
     _AUTOMODIFY = args.disable_modify_title
@@ -546,19 +536,17 @@ class _ResolvePageLink:
     def __call__(self, summ, args):
         _verbose('Processing list link')
 
-        for attr in ('series', 'label', 'maker'):
+        for attr in ('series', 'label'):
             # 設定済みリンクは置き換えない
             if (attr == 'series' and summ['link_series']) or \
-               (attr == 'label'  and summ['link_label'])  or \
-               (attr == 'maker'  and summ['link_label']):
+               (attr == 'label'  and summ['link_label']):
                 continue
 
             list_type = ''
             list_page = summ[attr]
 
-            # 検索対象が同じならレーベル一覧に統合
-            if (attr != 'label' and (list_page == summ['label'])):
-                continue
+            if (list_page == '') and (attr == 'label'):
+                list_page = summ['maker']
 
             if list_page:
                 if list_page == '__HIDE__':
@@ -836,8 +824,6 @@ def main(props=_libssw.Summary(), p_args=_argparse.Namespace, dmmparser=None):
     # HTMLの解析
     if not dmmparser:
         dmmparser = _libssw.DMMParser(autostrip=args.autostrip,
-                                      longtitle=args.longtitle,
-                                      check_rental=args.check_rental,
                                       check_rltd=args.check_rltd)
 
     try:
